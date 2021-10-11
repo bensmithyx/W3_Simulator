@@ -72,9 +72,16 @@ def findpath(source, target, newplace, path, recursive):
                 if result == None:
                     del path[-1]
                 else: return result
+
 # Takes the path as a variable
 finalpath = findpath(source, target,0,[],0)
 if finalpath != None:
     print(f'Source: {source}\nTarget: {target}\n{finalpath}')
 else:
     print("Must go Outside")
+
+# Locks all doors in a given pod
+def lockdown(pod):
+    [print(f'\nLocking {door} door\n') if door != 'empty' else '' for door in pods[index(pod)].door_type]
+
+lockdown('Connecting Corridor')
