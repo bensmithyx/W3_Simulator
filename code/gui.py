@@ -1,5 +1,4 @@
 import pygame
-
 pygame.init()
 
 # Creating the screen
@@ -12,28 +11,45 @@ pygame.display.set_caption('Control Pannel')
 icon = pygame.image.load('images/space-station.png')
 pygame.display.set_icon(icon)
 
+x = 800
+y = 500
+vel = 10
+
+run = True
+
 # Astronaut
-astronautImg = pygame.image.load('images/32astro.png')
-astronautX = 370
-astronautY = 480
-
-
-oval =  pygame.image.load('images/oval.png')
-image1 = pygame.image.load('images/dry-clean.png')
-image2 = pygame.image.load('images/full-moon.png')
-image3 = pygame.image.load('images/rec.png')
-
 def astronaut(x,y):
     screen.blit(astronautImg,(x,y))
 
-# GUI loop
-running = True
-while running:
+astronautImg = pygame.image.load('images/64astro.png')
+
+
+# Pod A
+def poda(x,y):
+    screen.blit(pygame.image.load('images/oval.png'),(x,y))
+
+
+while run:
+    pygame.time.delay(100)
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            running = False
-        screen.fill((255,153,102))
-        astronautX +=1
-        astronaut(astronautX,astronautY)
-        screen.blit(oval, (600, 300))
-        pygame.display.update()
+            run = False
+
+    keys = pygame.key.get_pressed()
+
+    if keys[pygame.K_LEFT]:
+        x -= vel
+    if keys[pygame.K_RIGHT]:
+        x += vel
+    if keys[pygame.K_UP]:
+        y -= vel
+    if keys[pygame.K_DOWN]:
+        y += vel
+
+    screen.fill((255,153,102))  # Fills the screen with black
+    astronaut(x,y)
+    poda(650,290)
+    pygame.display.update()
+
+pygame.quit()
