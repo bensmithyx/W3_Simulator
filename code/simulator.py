@@ -1,11 +1,12 @@
 
 
 class Pod:
-    def __init__(self, name, doors, door_type, internal_pod):
+    def __init__(self, id, name, doors, door_type, internal_pod):
         self.door_type = door_type
         self.internal_pod = internal_pod
         self.doors = doors
         self.name = name
+        self.id = id
         # Checking if there is a pod within another one if there is it will add the doors so it knows how to get to the pod
         if len(self.internal_pod):
             self.internal_top_door = internal_pod[0]
@@ -35,7 +36,7 @@ class Pod:
             return f"Name = {self.name}\nPod Type = {self.pod_type}\nTop Door ({self.door_type[0]}) = {self.topdoor}\nBottom Door ({self.door_type[1]}) = {self.bottomdoor}\n"
 
 # List of all the pods if a new one is to be added it can be done here
-pods = [Pod('Living Quarters',['outside','empty','Connecting Corridor','empty'],['airlock','empty','normal','empty'],[]),Pod('Connecting Corridor',['Living Quarters','Food Production','Engineering Workshop/Mining Operations/Storage','Life Support/Power Plant/Recycling'],['normal','normal','normal','normal'],['Comms And Control Centre']),Pod('Comms And Control Centre',['Connecting Corridor','Connecting Corridor'],['normal','normal'],[]),Pod('Engineering Workshop/Mining Operations/Storage',['Connecting Corridor','Bio-Research','outside','empty'],['normal','airlock','airlock','empty'],[]),Pod('Bio-Research',['outside','Engineering Workshop/Mining Operations/Storage'],['empty','airlock'],[]),Pod('Food Production',['empty','Connecting Corridor'],['empty','normal'],[]),Pod('Life Support/Power Plant/Recycling',['Connecting Corridor','outside'],['normal','airlock'],[]),Pod('Storage (External)',['outside','empty'],['airlock','empty'],[]),Pod('Emergency Quarters',['empty','empty','empty','outside'],['empty','empty','empty','airlock'],[])]
+pods = [Pod(1,'Living Quarters',['outside','empty','Connecting Corridor','empty'],['airlock','empty','normal','empty'],[]),Pod(2,'Connecting Corridor',['Living Quarters','Food Production','Engineering Workshop/Mining Operations/Storage','Life Support/Power Plant/Recycling'],['normal','normal','normal','normal'],['Comms And Control Centre']),Pod(3,'Comms And Control Centre',['Connecting Corridor','Connecting Corridor'],['normal','normal'],[]),Pod(4,'Engineering Workshop/Mining Operations/Storage',['Connecting Corridor','Bio-Research','outside','empty'],['normal','airlock','airlock','empty'],[]),Pod(5,'Bio-Research',['outside','Engineering Workshop/Mining Operations/Storage'],['empty','airlock'],[]),Pod(6,'Food Production',['empty','Connecting Corridor'],['empty','normal'],[]),Pod(7,'Life Support/Power Plant/Recycling',['Connecting Corridor','outside'],['normal','airlock'],[]),Pod(8,'Storage (External)',['outside','empty'],['airlock','empty'],[]),Pod(9,'Emergency Quarters',['empty','empty','empty','outside'],['empty','empty','empty','airlock'],[])]
 
 # Finds the index of a certain pod based on it's name
 def index(source):
@@ -69,7 +70,7 @@ def findpath(source, target, newplace, path):
 # Locks all doors in a given pod
 def lockdown(pod):
     [print(f'\nLocking {door} door\n') if door != 'empty' else '' for door in pods[index(pod)].door_type]
-
+'''
 while True:
     check = int(input('\n1 - Find Path\n2 - Lockdown Pod\n3 - Show all pods\n4 - Exit\n>'))
     if check == 1:
@@ -90,4 +91,4 @@ while True:
         # Displaying all pods and there attributes to the screen
         [print(pod) for pod in pods]
     elif check == 4:
-        break
+        break'''
