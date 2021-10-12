@@ -3,7 +3,7 @@ import pygame
 pygame.init()
 
 # Creating the screen
-screen = pygame.display.set_mode((1400, 1000))
+screen = pygame.display.set_mode((1600, 1000))
 
 # Changing the title
 pygame.display.set_caption('Control Pannel')
@@ -17,13 +17,14 @@ astronautImg = pygame.image.load('images/32astro.png')
 astronautX = 370
 astronautY = 480
 
+
 oval =  pygame.image.load('images/oval.png')
 image1 = pygame.image.load('images/dry-clean.png')
 image2 = pygame.image.load('images/full-moon.png')
 image3 = pygame.image.load('images/rec.png')
 
-def astronaut():
-    screen.blit(astronautImg,(astronautX,astronautY))
+def astronaut(x,y):
+    screen.blit(astronautImg,(x,y))
 
 # GUI loop
 running = True
@@ -32,6 +33,7 @@ while running:
         if event.type == pygame.QUIT:
             running = False
         screen.fill((255,153,102))
-        astronaut()
-        screen.blit(oval, (300, 200))
+        astronautX +=1
+        astronaut(astronautX,astronautY)
+        screen.blit(oval, (600, 300))
         pygame.display.update()
