@@ -39,9 +39,19 @@ class Door:
     def addText(self, msg):
         screen.blit(self.font.render(msg, True, (0,0,0)), (0,0))
 
-# Astronaut
-def astronaut(x,y):
-    screen.blit(astronautImg,(x,y))
+class Astronaut:
+    def __init__(self, id, x, y):
+        self.id = id
+        #self.PLD = PLD
+        self.x = x
+        self.y = y
+        self.image = screen.blit(astronautImg,(x,y))
+
+    def update_movement(self, xpos, ypos):
+        self.image = screen.blit(astronautImg,(xpos,ypos))
+        self.lastx = xpos
+        self.lasty = ypos
+
 
 pygame.init()
 
@@ -54,7 +64,6 @@ pygame.display.set_caption('Control Pannel')
 # Adding icon
 icon = pygame.image.load('images/space-station.png')
 pygame.display.set_icon(icon)
-
 
 # Astronauts starting locations
 x, x2 = 800, 1000
@@ -80,23 +89,17 @@ pods_to_draw = [Circle('living_quarters_background',colour,(600,500),190,0),Circ
 # Making the doors
 doors_to_draw = [Door(1,'living_quarters_left_door',doorcolour,(410,425,30,150)),Door(1,'living_quarters_top_door',doorcolour,(525,300,150,30)),Door(1,'living_quarters_right_door',doorcolour,(780,425,30,150)),Door(1,'living_quarters_bottom_door',doorcolour,(525,670,150,30))]
 astronautImg = pygame.image.load('images/64astro.png')
+
+# Making Astronauts
+astronauts = [Astronaut(1,500,500),Astronaut(2,600,600),Astronaut(3,500,800)]
+active_astornaut = 1
 test = False
+firsttime = False
 while run:
     pygame.time.delay(100)
-
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            run = False
-        if event.type == pygame.MOUSEBUTTONUP:
-            pos = pygame.mouse.get_pos()
-            if astronaut1.collidepoint(pos):
-                print('change to 1')
-
-            elif astronaut2.collidepoint(pos):
-                print('change to 2')
-
+    # Check which key has been pressed
     keys = pygame.key.get_pressed()
-
+    # Chaing the pos of the astronaut based on keypresses
     if keys[pygame.K_LEFT] or keys[pygame.K_a]:
         x -= vel
     if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
@@ -105,6 +108,7 @@ while run:
         y -= vel
     if keys[pygame.K_DOWN] or keys[pygame.K_s]:
         y += vel
+    # Stops astronauts from going outside of the screen
     if x <=0:
         x = 0
     elif x >= 1550:
@@ -114,8 +118,10 @@ while run:
     elif y >= 950:
         y = 950
 
-    screen.fill((255,153,102))  # Fills the screen with black
+    # Fills the screen just in case image doesn't load
+    screen.fill((255,153,102))
     surface = pygame.image.load('images/surface.png')
+    # Adding background image to screen
     screen.blit(surface,(0,0))
 
     for pod in pods_to_draw:
@@ -137,8 +143,32 @@ while run:
                 door.addText('Door Closed!')
         Door.drawdoor(door)
 
-    astronaut2 = screen.blit(astronautImg,(x2,y2))
-    astronaut1 = screen.blit(astronautImg,(x,y))
+    for astronaut in astronauts:
+        if active_astornaut == astronaut.id:
+            if firsttime:
+                try:
+                    x, y = astronaut.lastx, astronaut.lasty
+                except:
+                    x, y = astronaut.x, astronaut.y
+                firsttime = False
+            astronaut.update_movement(x,y)
+        else:
+            try:
+                astronaut.update_movement(astronaut.lastx,astronaut.lasty)
+            except:
+                astronaut.update_movement(astronaut.x,astronaut.y)
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+        if event.type == pygame.MOUSEBUTTONUP:
+            pos = pygame.mouse.get_pos()
+            for astronaut in astronauts:
+                if astronaut.image.collidepoint(pos):
+                    print(f'change to {astronaut.id}')
+                    active_astornaut = astronaut.id
+                    firsttime = True
+
     # [yxis,xxis,width,height]
     if y > 350 and y < 590 and x > 350 and x < 440 and keys[pygame.K_e]:
         test = not test
