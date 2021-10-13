@@ -1,5 +1,3 @@
-
-
 class Pod:
     def __init__(self, id, name, doors, door_type, internal_pod):
         self.door_type = door_type
