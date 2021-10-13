@@ -143,6 +143,7 @@ while run:
                 door.addText('Door Closed!')
         Door.drawdoor(door)
 
+    # Moves selected astronaut around the screen and keeps the others still
     for astronaut in astronauts:
         if active_astornaut == astronaut.id:
             if firsttime:
@@ -162,10 +163,11 @@ while run:
         if event.type == pygame.QUIT:
             run = False
         if event.type == pygame.MOUSEBUTTONUP:
+            # Get position of mouse when mousebutton is clicked
             pos = pygame.mouse.get_pos()
             for astronaut in astronauts:
                 if astronaut.image.collidepoint(pos):
-                    print(f'change to {astronaut.id}')
+                    # Setting which astronaut is to be moved using their id
                     active_astornaut = astronaut.id
                     firsttime = True
 
