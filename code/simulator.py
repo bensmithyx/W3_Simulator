@@ -48,6 +48,7 @@ class Pod:
         if isinstance(self.position,tuple):
             self.pos = self.position
         else:
+            # Checks which side of the existing pod the new pod is to be added to and finds the x,y cords for the new pod
             for pod in pods:
                 if pod.id == self.position:
                     if 'left' == self.side_to_attach_door:
@@ -65,6 +66,7 @@ class Pod:
         # Outline of circle
         pygame.draw.circle(screen, (0,0,0), self.pos, self.radius, 5)
 
+        # Adds doors colours based on what type of door it is
         doorcolourdic = {'empty':(0,0,0),'normal':doorcolour,'airlock':lightblue}
 
         if self.orientation == 'left' or self.pod_type == 'A':
@@ -136,6 +138,7 @@ pods = [
         Pod(7,'Connecting Corridor',['Living Quarters','Food Production','Engineering Workshop/Mining Operations/Storage','Life Support/Power Plant/Recycling'],['normal','normal','normal','normal'],['Comms And Control Centre'],6,'right',''),
         Pod(8,'Engineering Workshop/Mining Operations/Storage',['Connecting Corridor','Bio-Research','outside','empty'],['normal','airlock','airlock','empty'],[],7,'right',''),
         Pod(9,'Comms And Control Centre',['Connecting Corridor','Connecting Corridor'],['normal','normal'],[],7,'center','left'),
+        ## Test pods to add to spacestation
         #Pod(10,'New Pod',['Living Quarters','outside'],['airlock','normal'],[],6,'top','top')]
         #Pod(11,'New Pod',['Living Quarters','outside'],['normal','airlock'],[],6,'center','left')]
 
@@ -205,6 +208,7 @@ while run:
     # Adding background image to screen
     screen.blit(surface,(0,0))
 
+    # Draws the pods to the screen
     [pod.drawpod() for pod in pods]
 
     # Moves selected astronaut around the screen and keeps the others still
