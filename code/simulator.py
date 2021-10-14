@@ -98,6 +98,13 @@ class Astronaut:
         self.lastx = xpos
         self.lasty = ypos
 
+def iscollided(x1,y1, x2, y2):
+    distance = ((x2-x1)**2 + (y2-y1)**2)**0.5
+    if distance < 50:
+        return True
+    else:
+        return False
+
 pygame.init()
 
 # Creating the screen
@@ -137,7 +144,7 @@ pods = [
         Pod(6,'Living Quarters',['outside','empty','Connecting Corridor','empty'],['airlock','empty','normal','empty'],[],(600,500),'',''),
         Pod(7,'Connecting Corridor',['Living Quarters','Food Production','Engineering Workshop/Mining Operations/Storage','Life Support/Power Plant/Recycling'],['normal','normal','normal','normal'],['Comms And Control Centre'],6,'right',''),
         Pod(8,'Engineering Workshop/Mining Operations/Storage',['Connecting Corridor','Bio-Research','outside','empty'],['normal','airlock','airlock','empty'],[],7,'right',''),
-        Pod(9,'Comms And Control Centre',['Connecting Corridor','Connecting Corridor'],['normal','normal'],[],7,'center','left'),
+        Pod(9,'Comms And Control Centre',['Connecting Corridor','Connecting Corridor'],['normal','normal'],[],7,'center','left')]
         ## Test pods to add to spacestation
         #Pod(10,'New Pod',['Living Quarters','outside'],['airlock','normal'],[],6,'top','top')]
         #Pod(11,'New Pod',['Living Quarters','outside'],['normal','airlock'],[],6,'center','left')]
@@ -227,6 +234,9 @@ while run:
             except:
                 astronaut.update_movement(astronaut.x,astronaut.y)
 
+
+
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
@@ -241,8 +251,11 @@ while run:
                     firsttime = True
 
     # [yxis,xxis,width,height]
-    if y > 350 and y < 590 and x > 350 and x < 440 and keys[pygame.K_e]:
-        test = not test
+    #if y > 350 and y < 590 and x > 350 and x < 440 and keys[pygame.K_e]:
+        #test = not test
+
+    #if iscollided(400,450,x,y) and keys[pygame.K_e]:
+        #print('Door opened')
     pygame.display.update()
 
 pygame.quit()
