@@ -14,6 +14,8 @@ class Pod:
         self.colour = podcolour
         self.door_height = 100
         self.door_width = self.door_height/5
+        # Adds doors colours based on what type of door it is
+        self.doorcolourdic = {'empty':(0,0,0),'normal':doorcolour,'airlock':lightblue}
         # Checking if there is a pod within another one if there is it will add the connecting_rooms so it knows how to get to the pod
         if len(self.internal_pod):
             self.internal_top_door = internal_pod[0]
@@ -44,6 +46,34 @@ class Pod:
         elif self.pod_type == 'B':
             return f"Name = {self.name}\nPod Type = {self.pod_type}\nTop Door ({self.door_types[0]}) = {self.topdoor}\nBottom Door ({self.door_types[1]}) = {self.bottomdoor}\n"
 
+    def closedoor(self, door_to_close):
+        if door_to_close == 'left':
+            # Left door
+            pygame.draw.rect(screen,self.doorcolourdic[self.door_types[0]],(self.pos[0]-(self.radius+(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height))
+        elif door_to_close == 'right':
+            # Right door
+            pygame.draw.rect(screen,self.doorcolourdic[self.door_types[1]],(self.pos[0]+(self.radius-(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height))
+        elif door_to_close  == 'top':
+            # Top door
+            pygame.draw.rect(screen,self.doorcolourdic[self.door_types[index1]],(self.pos[0]-(self.door_height/2),self.pos[1]-(self.radius+(self.door_width/2)),self.door_height,self.door_width))
+        elif door_to_close == 'bottom':
+            # Bottom door
+            pygame.draw.rect(screen,self.doorcolourdic[self.door_types[index2]],(self.pos[0]-(self.door_height/2),self.pos[1]+(self.radius-(self.door_width/2)),self.door_height,self.door_width))
+
+    def opendoor(self, door_to_open):
+        if door_to_open == 'left':
+            # Left door
+            pygame.draw.rect(screen,(0,255,0),(self.pos[0]-(self.radius+(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height))
+        elif door_to_open == 'right':
+            # Right door
+            pygame.draw.rect(screen,(0,255,0),(self.pos[0]+(self.radius-(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height))
+        elif door_to_open  == 'top':
+            # Top door
+            pygame.draw.rect(screen,(0,255,0),(self.pos[0]-(self.door_height/2),self.pos[1]-(self.radius+(self.door_width/2)),self.door_height,self.door_width))
+        elif door_to_open == 'bottom':
+            # Bottom door
+            pygame.draw.rect(screen,(0,255,0),(self.pos[0]-(self.door_height/2),self.pos[1]+(self.radius-(self.door_width/2)),self.door_height,self.door_width))
+
     def drawpod(self):
         if isinstance(self.position,tuple):
             self.pos = self.position
@@ -66,14 +96,11 @@ class Pod:
         # Outline of circle
         pygame.draw.circle(screen, (0,0,0), self.pos, self.radius, 5)
 
-        # Adds doors colours based on what type of door it is
-        doorcolourdic = {'empty':(0,0,0),'normal':doorcolour,'airlock':lightblue}
-
         if self.orientation == 'left' or self.pod_type == 'A':
             # Left door
-            pygame.draw.rect(screen,doorcolourdic[self.door_types[0]],(self.pos[0]-(self.radius+(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height))
+            pygame.draw.rect(screen,self.doorcolourdic[self.door_types[0]],(self.pos[0]-(self.radius+(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height))
             # Right door
-            pygame.draw.rect(screen,doorcolourdic[self.door_types[1]],(self.pos[0]+(self.radius-(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height))
+            pygame.draw.rect(screen,self.doorcolourdic[self.door_types[1]],(self.pos[0]+(self.radius-(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height))
 
         if self.orientation == 'top' or self.pod_type == 'A':
             if self.pod_type == 'A':
@@ -81,9 +108,9 @@ class Pod:
             else:
                 index1, index2 = 0, 1
             # Top door
-            pygame.draw.rect(screen,doorcolourdic[self.door_types[index1]],(self.pos[0]-(self.door_height/2),self.pos[1]-(self.radius+(self.door_width/2)),self.door_height,self.door_width))
+            pygame.draw.rect(screen,self.doorcolourdic[self.door_types[index1]],(self.pos[0]-(self.door_height/2),self.pos[1]-(self.radius+(self.door_width/2)),self.door_height,self.door_width))
             # Bottom door
-            pygame.draw.rect(screen,doorcolourdic[self.door_types[index2]],(self.pos[0]-(self.door_height/2),self.pos[1]+(self.radius-(self.door_width/2)),self.door_height,self.door_width))
+            pygame.draw.rect(screen,self.doorcolourdic[self.door_types[index2]],(self.pos[0]-(self.door_height/2),self.pos[1]+(self.radius-(self.door_width/2)),self.door_height,self.door_width))
 
 class Astronaut:
     def __init__(self, id, x, y):
@@ -188,8 +215,7 @@ astronauts = [Astronaut(1,x,y),Astronaut(2,820,490),Astronaut(3,1350,475)]
 active_astronaut = 1
 test = False
 firsttime = False
-run = True
-while run:
+while True:
     pygame.time.delay(100)
     # Check which key has been pressed
     keys = pygame.key.get_pressed()
@@ -217,7 +243,7 @@ while run:
 
     # Draws the pods to the screen
     [pod.drawpod() for pod in pods]
-
+    
     # Moves selected astronaut around the screen and keeps the others still
     for astronaut in astronauts:
         if active_astronaut == astronaut.id:
@@ -234,12 +260,9 @@ while run:
             except:
                 astronaut.update_movement(astronaut.x,astronaut.y)
 
-
-
-
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            run = False
+            pygame.quit()
         if event.type == pygame.MOUSEBUTTONUP:
             # Get position of mouse when mousebutton is clicked
             pos = pygame.mouse.get_pos()
@@ -254,8 +277,7 @@ while run:
     #if y > 350 and y < 590 and x > 350 and x < 440 and keys[pygame.K_e]:
         #test = not test
 
-    #if iscollided(400,450,x,y) and keys[pygame.K_e]:
-        #print('Door opened')
+    '''if iscollided(400,450,x,y) and keys[pygame.K_e]:
+        pygame.draw.rect(screen,(0,0,0),(400,470,20,60))
+        print('done')'''
     pygame.display.update()
-
-pygame.quit()
