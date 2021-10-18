@@ -20,6 +20,7 @@ class Pod:
         self.bottomdoorstate = False
         # Adds doors colours based on what type of door it is
         self.doorcolourdic = {'empty':(0,0,0),'normal':doorcolour,'airlock':lightblue}
+        self.opendoorcolourdic = {'empty':(0,0,0),'normal':(0,255,0),'airlock':(0,255,0)}
         # Checking if there is a pod within another one if there is it will add the connecting_rooms so it knows how to get to the pod
         if len(self.internal_pod):
             self.internal_top_door = internal_pod[0]
@@ -75,20 +76,28 @@ class Pod:
                 pygame.draw.rect(screen,self.doorcolourdic[self.door_types[index2]],(self.pos[0]-(self.door_height/2),self.pos[1]+(self.radius-(self.door_width/2)),self.door_height,self.door_width))
 
     def opendoor(self, door_to_open):
+        if self.pod_type == 'A':
+            index1, index2 = 0, 2
+        else:
+            index1, index2 = 0, 1
         if self.orientation == 'left' or self.pod_type == 'A':
             if door_to_open == 'left':
                 # Left door
-                pygame.draw.rect(screen,(0,255,0),(self.pos[0]-(self.radius+(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height))
+                pygame.draw.rect(screen,self.opendoorcolourdic[self.door_types[index1]],(self.pos[0]-(self.radius+(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height))
             elif door_to_open == 'right':
                 # Right door
-                pygame.draw.rect(screen,(0,255,0),(self.pos[0]+(self.radius-(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height))
+                pygame.draw.rect(screen,self.opendoorcolourdic[self.door_types[index2]],(self.pos[0]+(self.radius-(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height))
         if self.orientation == 'top' or self.pod_type == 'A':
+            if self.pod_type == 'A':
+                index1, index2 = 1, 3
+            else:
+                index1, index2 = 0, 1
             if door_to_open  == 'top':
                 # Top door
-                pygame.draw.rect(screen,(0,255,0),(self.pos[0]-(self.door_height/2),self.pos[1]-(self.radius+(self.door_width/2)),self.door_height,self.door_width))
+                pygame.draw.rect(screen,self.opendoorcolourdic[self.door_types[index1]],(self.pos[0]-(self.door_height/2),self.pos[1]-(self.radius+(self.door_width/2)),self.door_height,self.door_width))
             elif door_to_open == 'bottom':
                 # Bottom door
-                pygame.draw.rect(screen,(0,255,0),(self.pos[0]-(self.door_height/2),self.pos[1]+(self.radius-(self.door_width/2)),self.door_height,self.door_width))
+                pygame.draw.rect(screen,self.opendoorcolourdic[self.door_types[index2]],(self.pos[0]-(self.door_height/2),self.pos[1]+(self.radius-(self.door_width/2)),self.door_height,self.door_width))
 
     def drawpod(self, x,y):
         if isinstance(self.position,tuple):
@@ -113,32 +122,67 @@ class Pod:
         pygame.draw.circle(screen, (0,0,0), self.pos, self.radius, 5)
 
         if self.orientation == 'left' or self.pod_type == 'A':
+            if self.pod_type == 'A':
+                index1, index2 = 0, 2
+            else:
+                index1, index2 = 0, 1
             # Positions of the left and right doors
             self.leftdoorpos = self.pos[0]-(self.radius+(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height
             self.rightdoorpos = self.pos[0]+(self.radius-(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height
-
             if keys[pygame.K_e]:
-                if checkcollided(self.rightdoorpos[0],self.rightdoorpos[1],x,y) and self.leftdoorstate == False:
-                    self.rightdoorstate = not self.rightdoorstate
-                elif checkcollided(self.leftdoorpos[0],self.leftdoorpos[1],x,y) and self.rightdoorstate == False:
-                    self.leftdoorstate = not self.leftdoorstate
+                if self.connecting_rooms[index2] not in ['outside','empty']:
+                    if checkcollided(self.rightdoorpos[0],self.rightdoorpos[1],x,y) and self.leftdoorstate == False and pods[index(self.connecting_rooms[index2])].rightdoorstate == False:
+                        self.rightdoorstate = not self.rightdoorstate
+                else:
+                    if checkcollided(self.rightdoorpos[0],self.rightdoorpos[1],x,y) and self.leftdoorstate == False:
+                        self.rightdoorstate = not self.rightdoorstate
+                if self.connecting_rooms[index1] not in ['outside','empty']:
+                    if checkcollided(self.leftdoorpos[0],self.leftdoorpos[1],x,y) and self.rightdoorstate == False and pods[index(self.connecting_rooms[index1])].leftdoorstate == False:
+                        self.leftdoorstate = not self.leftdoorstate
+                else:
+                    if checkcollided(self.leftdoorpos[0],self.leftdoorpos[1],x,y) and self.rightdoorstate == False:
+                        self.leftdoorstate = not self.leftdoorstate
 
-            self.opendoor('right') if self.rightdoorstate == True and self.leftdoorstate == False else self.closedoor('right')
-            self.opendoor('left') if self.leftdoorstate == True and self.rightdoorstate == False else self.closedoor('left')
+            if self.connecting_rooms[index1] not in ['outside','empty']:
+                self.opendoor('left') if self.leftdoorstate == True and self.rightdoorstate == False and pods[index(self.connecting_rooms[index1])].leftdoorstate == False else self.closedoor('left')
+            else:
+                self.opendoor('left') if self.leftdoorstate == True and self.rightdoorstate == False else self.closedoor('left')
+            if self.connecting_rooms[index2] not in ['outside','empty']:
+                    self.opendoor('right') if self.rightdoorstate == True and self.leftdoorstate == False and pods[index(self.connecting_rooms[index2])].rightdoorstate == False else self.closedoor('right')
+            else:
+                self.opendoor('right') if self.rightdoorstate == True and self.leftdoorstate == False else self.closedoor('right')
 
         if self.orientation == 'top' or self.pod_type == 'A':
+            if self.pod_type == 'A':
+                index1, index2 = 1, 3
+            else:
+                index1, index2 = 0, 1
                 # Positions of the top and bottom doors
             self.topdoorpos = (self.pos[0]-(self.door_height/2),self.pos[1]-(self.radius+(self.door_width/2)),self.door_height,self.door_width)
             self.bottomdoorpos = (self.pos[0]-(self.door_height/2),self.pos[1]+(self.radius-(self.door_width/2)),self.door_height,self.door_width)
 
             if keys[pygame.K_e]:
-                if checkcollided(self.topdoorpos[0],self.topdoorpos[1],x,y) and self.bottomdoorstate == False:
-                    self.topdoorstate = not self.topdoorstate
-                elif checkcollided(self.bottomdoorpos[0],self.bottomdoorpos[1],x,y) and self.topdoorstate == False:
-                    self.bottomdoorstate = not self.bottomdoorstate
+                if self.connecting_rooms[index1] not in ['outside','empty']:
+                    if checkcollided(self.topdoorpos[0],self.topdoorpos[1],x,y) and self.bottomdoorstate == False and pods[index(self.connecting_rooms[index1])].topdoorstate == False:
+                        self.topdoorstate = not self.topdoorstate
+                else:
+                    if checkcollided(self.topdoorpos[0],self.topdoorpos[1],x,y) and self.bottomdoorstate == False:
+                        self.topdoorstate = not self.topdoorstate
+                if self.connecting_rooms[index2] not in ['outside','empty']:
+                    if checkcollided(self.bottomdoorpos[0],self.bottomdoorpos[1],x,y) and self.topdoorstate == False and pods[index(self.connecting_rooms[index2])].bottomdoorstate == False:
+                        self.bottomdoorstate = not self.bottomdoorstate
+                else:
+                    if checkcollided(self.bottomdoorpos[0],self.bottomdoorpos[1],x,y) and self.topdoorstate == False:
+                        self.bottomdoorstate = not self.bottomdoorstate
 
-            self.opendoor('top') if self.topdoorstate == True and self.bottomdoorstate == False else self.closedoor('top')
-            self.opendoor('bottom') if self.bottomdoorstate == True and self.topdoorstate == False else self.closedoor('bottom')
+            if self.connecting_rooms[index1] not in ['outside','empty']:
+                self.opendoor('top') if self.topdoorstate == True and self.bottomdoorstate == False and pods[index(self.connecting_rooms[index1])].topdoorstate == False else self.closedoor('top')
+            else:
+                self.opendoor('top') if self.topdoorstate == True and self.bottomdoorstate == False else self.closedoor('top')
+            if self.connecting_rooms[index2] not in ['outside','empty']:
+                self.opendoor('bottom') if self.bottomdoorstate == True and self.topdoorstate == False and pods[index(self.connecting_rooms[index2])].bottomdoorstate == False else self.closedoor('bottom')
+            else:
+                self.opendoor('bottom') if self.bottomdoorstate == True and self.topdoorstate == False else self.closedoor('bottom')
 
 class Astronaut:
     def __init__(self, id, x, y):
@@ -192,8 +236,8 @@ podcolour = grey
 # List of all the pods if a new one is to be added it can be done here
 pods = [
         Pod(1,'Bio-Research',['outside','Engineering Workshop/Mining Operations/Storage'],['empty','airlock'],[],8,'top','top'),
-        Pod(2,'Food Production',['empty','Connecting Corridor'],['empty','normal'],[],7,'bottom','top'),
-        Pod(3,'Life Support/Power Plant/Recycling',['Connecting Corridor','outside'],['normal','airlock'],[],7,'top','top'),
+        Pod(2,'Food Production',['empty','Connecting Corridor'],['empty','normal'],[],7,'top','top'),
+        Pod(3,'Life Support/Power Plant/Recycling',['Connecting Corridor','outside'],['normal','airlock'],[],7,'bottom','top'),
         Pod(4,'Storage (External)',['outside','empty'],['airlock','empty'],[],(200, 800),'','top'),
         Pod(5,'Emergency Quarters',['empty','empty','empty','outside'],['empty','empty','empty','airlock'],[],(220, 250),'',''),
         Pod(6,'Living Quarters',['outside','empty','Connecting Corridor','empty'],['airlock','empty','normal','empty'],[],(600,500),'',''),
@@ -237,7 +281,7 @@ def findpath(source, target, newplace, path):
 def lockdown(name):
     for pod in pods:
         if pod.name == name:
-            [pod.closedoor(x, (255,0,0)) for x in ['left','right','top','bottom']]
+            [pod.closedoor(x) for x in ['left','right','top','bottom']]
 
 # Making Astronauts
 astronautImg = pygame.image.load('images/64astro.png')
@@ -273,7 +317,7 @@ while True:
 
     # Draws the pods to the screen
     [pod.drawpod(x,y) for pod in pods]
-    
+
     # Moves selected astronaut around the screen and keeps the others still
     for astronaut in astronauts:
         if active_astronaut == astronaut.id:
@@ -299,7 +343,6 @@ while True:
             for astronaut in astronauts:
                 if astronaut.image.collidepoint(pos):
                     # Setting which astronaut is to be moved using their id
-                    print(astronaut.id)
                     active_astronaut = astronaut.id
                     firsttime = True
     # [yxis,xxis,width,height]
