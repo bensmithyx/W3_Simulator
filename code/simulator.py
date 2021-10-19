@@ -190,6 +190,7 @@ class Astronaut(pygame.sprite.Sprite):
         self.alive = True
         self.speed = speed
         self.direction = 1
+        self.health = 100
         self.flip = False
         self.animation_list = []
         self.frame_index = 0
@@ -198,7 +199,7 @@ class Astronaut(pygame.sprite.Sprite):
         self.id = id
         self.switch = True
         # Index 0 is IDLE animations
-        animation_types = ['astronautidle', 'astronautrunning']
+        animation_types = ['astronautidle', 'astronautrunning','astronautdead']
         for animation in animation_types:
             temp_list = []
             number_of_frames = len(os.listdir(f'images/{animation}'))
@@ -207,12 +208,6 @@ class Astronaut(pygame.sprite.Sprite):
                 astronautImg = pygame.transform.scale(astronautImg, (int(astronautImg.get_width()*scale), int(astronautImg.get_height()*scale)))
                 temp_list.append(astronautImg)
             self.animation_list.append(temp_list)
-            # Index 1 is RUNNING animastions
-            temp_list = []
-            for image in range(2):
-                astronautImg = pygame.image.load(f'images/astronautrunning/{image}.png')
-                astronautImg = pygame.transform.scale(astronautImg, (int(astronautImg.get_width()*scale), int(astronautImg.get_height()*scale)))
-                temp_list.append(astronautImg)
 
         self.animation_list.append(temp_list)
         self.image = self.animation_list[self.action][self.frame_index]
@@ -221,6 +216,14 @@ class Astronaut(pygame.sprite.Sprite):
 
     def update(self):
         self.update_animation()
+        self.check_alive()
+
+    def check_alive(self):
+        if self.health <= 0:
+            self.health = 0
+            self.alive = False
+            self.speed = 0
+            self.update_action(2)
 
     def move(self, moving_left, moving_right, moving_up, moving_down, trigger_door):
         # Reset movment variables
@@ -271,14 +274,10 @@ class Astronaut(pygame.sprite.Sprite):
         airlock_door_positions = []
         for pod in pods:
             if pod.pod_type == 'A':
-                if pod.door_types[0] == 'airlock' and pod.connecting_rooms[0] == 'outside':
-                        airlock_door_positions.append(pod.leftdoorpos)
-                elif pod.door_types[1] == 'airlock' and pod.connecting_rooms[1] == 'outside':
-                        airlock_door_positions.append(pod.topdoorpos)
-                elif pod.door_types[2] == 'airlock' and pod.connecting_rooms[2] == 'outside':
-                        airlock_door_positions.append(pod.rightdoorpos)
-                elif pod.door_types[3] == 'airlock' and pod.connecting_rooms[3] == 'outside':
-                        airlock_door_positions.append(pod.bottomdoorpos)
+                for index, door in enumerate([pod.leftdoorpos,pod.topdoorpos,pod.rightdoorpos,pod.bottomdoorpos]):
+                    if pod.door_types[index] == 'airlock' and pod.connecting_rooms[index] == 'outside':
+                            airlock_door_positions.append(door)
+
             elif pod.pod_type == 'B':
                 if pod.door_types[0] == 'airlock' and pod.connecting_rooms[0] == 'outside':
                     try:
@@ -317,7 +316,11 @@ class Astronaut(pygame.sprite.Sprite):
 
         # If the animation list runs out then loop back to the start
         if self.frame_index >= len(self.animation_list[self.action]):
-            self.frame_index = 0
+            # If action is 2 (death) don't loop animation
+            if self.action == 2:
+                self.frame_index = len(self.animation_list[self.action])-1
+            else:
+                self.frame_index = 0
 
     def update_action(self, new_action):
         # Checks if the new action is different to the previous one
@@ -428,8 +431,10 @@ pygame.display.set_caption('Space Station Simulator')
 # Adding icon
 icon = pygame.image.load('images/space-station.png')
 pygame.display.set_icon(icon)
+
 # Making Astronauts
 astronauts = [Astronaut(0,600,475,1.5,3.5),Astronaut(1,820,490,1.5,3.5),Astronaut(2,1350,475,1.5,3.5)]
+
 # Background Image
 surface = pygame.image.load('images/surface.png')
 
@@ -452,7 +457,7 @@ while run:
     # Draws the pods to the screen
     [pod.drawpod(astronauts[active_astronaut].rect.centerx,astronauts[active_astronaut].rect.centery) for pod in pods]
 
-    [astronauts[index].draw() for index in range(len(astronauts))]
+    [astronaut.draw() for astronaut in astronauts]
 
     # Updating selected astronauts movement
     astronauts[active_astronaut].update()
