@@ -1,5 +1,4 @@
-import pygame, time, simulator
-
+import pygame, os
 class Pod:
     def __init__(self, id, name, connecting_rooms, door_types, internal_pod, position, side_to_attach_door, orientation):
         self.pos = (0,0)
@@ -129,6 +128,7 @@ class Pod:
             # Positions of the left and right doors
             self.leftdoorpos = self.pos[0]-(self.radius+(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height
             self.rightdoorpos = self.pos[0]+(self.radius-(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height
+
             if keys[pygame.K_e]:
                 if self.connecting_rooms[index2] not in ['outside','empty']:
                     if checkcollided(self.rightdoorpos[0],self.rightdoorpos[1],x,y) and self.leftdoorstate == False and pods[index(self.connecting_rooms[index2])].rightdoorstate == False:
@@ -184,18 +184,97 @@ class Pod:
             else:
                 self.opendoor('bottom') if self.bottomdoorstate == True and self.topdoorstate == False else self.closedoor('bottom')
 
-class Astronaut:
-    def __init__(self, id, x, y):
+class Astronaut(pygame.sprite.Sprite):
+    def __init__(self, id, x, y, scale, speed):
+        pygame.sprite.Sprite.__init__(self)
+        self.alive = True
+        self.speed = speed
+        self.direction = 1
+        self.flip = False
+        self.animation_list = []
+        self.frame_index = 0
+        self.update_time = pygame.time.get_ticks()
+        self.action = 0
         self.id = id
         #self.PLD = PLD
-        self.x = x
-        self.y = y
-        self.image = screen.blit(astronautImg,(x,y))
+        # Index 0 is IDLE animations
+        animation_types = ['astronautidle', 'astronautrunning']
+        for animation in animation_types:
+            temp_list = []
+            number_of_frames = len(os.listdir(f'images/{animation}'))
+            for image in range(number_of_frames):
+                astronautImg = pygame.image.load(f'images/{animation}/{image}.png')
+                astronautImg = pygame.transform.scale(astronautImg, (int(astronautImg.get_width()*scale), int(astronautImg.get_height()*scale)))
+                temp_list.append(astronautImg)
+            self.animation_list.append(temp_list)
+            # Index 1 is RUNNING animastions
+            temp_list = []
+            for image in range(2):
+                astronautImg = pygame.image.load(f'images/astronautrunning/{image}.png')
+                astronautImg = pygame.transform.scale(astronautImg, (int(astronautImg.get_width()*scale), int(astronautImg.get_height()*scale)))
+                temp_list.append(astronautImg)
 
-    def update_movement(self, xpos, ypos):
-        self.image = screen.blit(astronautImg,(xpos,ypos))
-        self.lastx = xpos
-        self.lasty = ypos
+        self.animation_list.append(temp_list)
+        self.image = self.animation_list[self.action][self.frame_index]
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+
+    def move(self, moving_left, moving_right, moving_up, moving_down):
+        # Reset movment variables
+        dx = 0
+        dy = 0
+
+        if moving_left:
+            dx = -self.speed
+            self.flip = True
+            self.direction = -1
+        if moving_right:
+            dx = self.speed
+            self.flip = False
+            self.direction = 1
+        if moving_up:
+            dy = -self.speed
+        if moving_down:
+            dy = self.speed
+
+        # Stop astronaut from going off screen
+        if self.rect.bottom + dy > 1000:
+            dy = 1000 - self.rect.bottom
+        if self.rect.top + dy < 0:
+            dy = 0 + self.rect.top
+        if self.rect.left + dx < 0:
+            dx = 0 + self.rect.left
+        if self.rect.right + dx > 1600:
+            dx = 1600 - self.rect.right
+
+        # Update rectangle position
+        self.rect.x += dx
+        self.rect.y += dy
+
+
+    def update_animation(self):
+        cooldown = 100
+        # Update image depending on current frame
+        self.image = self.animation_list[self.action][self.frame_index]
+        # Check if enough time has past since last update
+        if pygame.time.get_ticks() - self.update_time > cooldown:
+            self.update_time = pygame.time.get_ticks()
+            self.frame_index += 1
+
+        # If the animation list runs out then loop back to the start
+        if self.frame_index >= len(self.animation_list[self.action]):
+            self.frame_index = 0
+
+    def update_action(self, new_action):
+        # Checks if the new action is different to the previous one
+        if new_action != self.action:
+            self.action = new_action
+            self.frame_index = 0
+            self.update_time = pygame.time.get_ticks()
+
+    def draw(self):
+        screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+
 
 def checkcollided(x1,y1, x2, y2):
     distance = ((x2-x1)**2 + (y2-y1)**2)**0.5
@@ -203,50 +282,6 @@ def checkcollided(x1,y1, x2, y2):
         return True
     else:
         return False
-
-pygame.init()
-
-# Creating the screen
-HEIGHT = 1600
-WIDTH = 1000
-screen = pygame.display.set_mode((HEIGHT, WIDTH))
-
-# Changing the title
-pygame.display.set_caption('Control Pannel')
-
-# Adding icon
-icon = pygame.image.load('images/space-station.png')
-pygame.display.set_icon(icon)
-
-# Astronauts starting locations
-x = 600
-y = 475
-vel = 30
-
-# Colours
-lightgrey = (170,170,170)
-grey = (144,144,144)
-colour = grey
-doorcolour = (204,204,204)
-open = (0,204,0)
-closed = (153,0,0)
-black = (0,0,0)
-lightblue = (0,153,255)
-podcolour = grey
-# List of all the pods if a new one is to be added it can be done here
-pods = [
-        Pod(1,'Bio-Research',['outside','Engineering Workshop/Mining Operations/Storage'],['empty','airlock'],[],8,'top','top'),
-        Pod(2,'Food Production',['empty','Connecting Corridor'],['empty','normal'],[],7,'top','top'),
-        Pod(3,'Life Support/Power Plant/Recycling',['Connecting Corridor','outside'],['normal','airlock'],[],7,'bottom','top'),
-        Pod(4,'Storage (External)',['outside','empty'],['airlock','empty'],[],(200, 800),'','top'),
-        Pod(5,'Emergency Quarters',['empty','empty','empty','outside'],['empty','empty','empty','airlock'],[],(220, 250),'',''),
-        Pod(6,'Living Quarters',['outside','empty','Connecting Corridor','empty'],['airlock','empty','normal','empty'],[],(600,500),'',''),
-        Pod(7,'Connecting Corridor',['Living Quarters','Food Production','Engineering Workshop/Mining Operations/Storage','Life Support/Power Plant/Recycling'],['normal','normal','normal','normal'],['Comms And Control Centre'],6,'right',''),
-        Pod(8,'Engineering Workshop/Mining Operations/Storage',['Connecting Corridor','Bio-Research','outside','empty'],['normal','airlock','airlock','empty'],[],7,'right',''),
-        Pod(9,'Comms And Control Centre',['Connecting Corridor','Connecting Corridor'],['normal','normal'],[],7,'center','left')]
-        ## Test pods to add to spacestation
-        #Pod(10,'New Pod',['Living Quarters','outside'],['airlock','normal'],[],6,'top','top')]
-        #Pod(11,'New Pod',['Living Quarters','outside'],['normal','airlock'],[],6,'center','left')]
 
 # Finds the index of a certain pod based on it's name
 def index(source):
@@ -283,70 +318,122 @@ def lockdown(name):
         if pod.name == name:
             [pod.closedoor(x) for x in ['left','right','top','bottom']]
 
-# Making Astronauts
-astronautImg = pygame.image.load('images/64astro.png')
-astronauts = [Astronaut(1,x,y),Astronaut(2,820,490),Astronaut(3,1350,475)]
-active_astronaut = 1
-test = False
-firsttime = False
-while True:
-    pygame.time.delay(100)
-    # Check which key has been pressed
-    keys = pygame.key.get_pressed()
-    # Chaing the pos of the astronaut based on keypresses
-    if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-        x -= vel
-    if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-        x += vel
-    if keys[pygame.K_UP] or keys[pygame.K_w]:
-        y -= vel
-    if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-        y += vel
-    # Stops astronauts from going outside of the screen
-    if x <=0: x = 0
-    elif x >= 1550: x = 1550
 
-    if y <=0: y = 0
-    elif y >= 950: y = 950
-
+def draw_background():
     # Fills the screen just in case image doesn't load
     screen.fill((255,153,102))
-    surface = pygame.image.load('images/surface.png')
     # Adding background image to screen
     screen.blit(surface,(0,0))
 
-    # Draws the pods to the screen
-    [pod.drawpod(x,y) for pod in pods]
+# Colours
+lightgrey = (170,170,170)
+grey = (144,144,144)
+colour = grey
+doorcolour = (204,204,204)
+open = (0,204,0)
+closed = (153,0,0)
+black = (0,0,0)
+lightblue = (0,153,255)
+podcolour = grey
+# List of all the pods if a new one is to be added it can be done here
+pods = [
+        Pod(1,'Bio-Research',['outside','Engineering Workshop/Mining Operations/Storage'],['empty','airlock'],[],8,'top','top'),
+        Pod(2,'Food Production',['outside','Connecting Corridor'],['empty','normal'],[],7,'top','top'),
+        Pod(3,'Life Support/Power Plant/Recycling',['Connecting Corridor','outside'],['normal','airlock'],[],7,'bottom','top'),
+        Pod(4,'Storage (External)',['outside','outisde'],['airlock','empty'],[],(200, 800),'','top'),
+        Pod(5,'Emergency Quarters',['outside','outside','outside','outside'],['empty','empty','empty','airlock'],[],(220, 250),'',''),
+        Pod(6,'Living Quarters',['outside','outside','Connecting Corridor','outside'],['airlock','empty','normal','empty'],[],(600,500),'',''),
+        Pod(7,'Connecting Corridor',['Living Quarters','Food Production','Engineering Workshop/Mining Operations/Storage','Life Support/Power Plant/Recycling'],['normal','normal','normal','normal'],['Comms And Control Centre'],6,'right',''),
+        Pod(8,'Engineering Workshop/Mining Operations/Storage',['Connecting Corridor','Bio-Research','outside','outside'],['normal','airlock','airlock','empty'],[],7,'right',''),
+        Pod(9,'Comms And Control Centre',['Connecting Corridor','Connecting Corridor'],['normal','normal'],[],7,'center','left')]
+        ## Test pods to add to spacestation
+        #Pod(10,'New Pod',['Living Quarters','outside'],['airlock','normal'],[],6,'top','top')]
+        #Pod(11,'New Pod',['Living Quarters','outside'],['normal','airlock'],[],6,'center','left')]
 
-    # Moves selected astronaut around the screen and keeps the others still
-    for astronaut in astronauts:
-        if active_astronaut == astronaut.id:
-            if firsttime:
-                try:
-                    x, y = astronaut.lastx, astronaut.lasty
-                except:
-                    x, y = astronaut.x, astronaut.y
-                firsttime = False
-            astronaut.update_movement(x,y)
+pygame.init()
+
+# Creating the screen 1600
+WIDTH = 1000
+HEIGHT = int(WIDTH*1.6)
+screen = pygame.display.set_mode((HEIGHT, WIDTH))
+
+# Changing the title
+pygame.display.set_caption('Space Station Simulator')
+# Adding icon
+icon = pygame.image.load('images/space-station.png')
+pygame.display.set_icon(icon)
+# Making Astronauts
+astronauts = [Astronaut(0,600,475,1.5,3.5),Astronaut(1,820,490,1.5,3.5),Astronaut(2,1350,475,1.5,3.5)]
+# Background Image
+surface = pygame.image.load('images/surface.png')
+
+clock = pygame.time.Clock()
+FPS = 60
+
+moving_left = False
+moving_right = False
+moving_up = False
+moving_down = False
+trigger_door = False
+active_astronaut = 0
+run = True
+while run:
+    clock.tick(FPS)
+    keys = pygame.key.get_pressed()
+    draw_background()
+
+    # Draws the pods to the screen
+    [pod.drawpod(astronauts[active_astronaut].rect.centerx,astronauts[active_astronaut].rect.centery) for pod in pods]
+
+    [astronauts[index].draw() for index in range(len(astronauts))]
+    # Updating selected astronauts movement
+    astronauts[active_astronaut].update_animation()
+    astronauts[active_astronaut].draw()
+    if astronauts[active_astronaut].alive:
+        # Update astronauts[active_astronaut] actions
+        if moving_left or moving_right or moving_up or moving_down:
+            # 1 means running
+            astronauts[active_astronaut].update_action(1)
         else:
-            try:
-                astronaut.update_movement(astronaut.lastx,astronaut.lasty)
-            except:
-                astronaut.update_movement(astronaut.x,astronaut.y)
+            # 0 means idle
+            astronauts[active_astronaut].update_action(0)
+        astronauts[active_astronaut].move(moving_left,moving_right,moving_up,moving_down)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
-            pygame.quit()
+            run = False
+        # Keyboard keypresses
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_a:
+                moving_left = True
+            if event.key == pygame.K_d:
+                moving_right = True
+            if event.key == pygame.K_w:
+                moving_up = True
+            if event.key == pygame.K_s:
+                moving_down = True
+            if event.key == pygame.K_ESCAPE:
+                run = False
+            if event.key == pygame.K_e:
+                trigger_door = True
+        # Keyboard button release
+        if event.type == pygame.KEYUP:
+            if event.key == pygame.K_a:
+                moving_left = False
+            if event.key == pygame.K_d:
+                moving_right = False
+            if event.key == pygame.K_w:
+                moving_up = False
+            if event.key == pygame.K_s:
+                moving_down = False
+            if event.key == pygame.K_e:
+                trigger_door = True
         if event.type == pygame.MOUSEBUTTONUP:
             # Get position of mouse when mousebutton is clicked
-            pos = pygame.mouse.get_pos()
+            mouse_position = pygame.mouse.get_pos()
             for astronaut in astronauts:
-                if astronaut.image.collidepoint(pos):
+                if astronaut.rect.collidepoint(mouse_position):
                     # Setting which astronaut is to be moved using their id
                     active_astronaut = astronaut.id
-                    firsttime = True
-    # [yxis,xxis,width,height]
-    #if y > 350 and y < 590 and x > 350 and x < 440 and keys[pygame.K_e]:
-        #test = not test
-
     pygame.display.update()
+pygame.quit()
