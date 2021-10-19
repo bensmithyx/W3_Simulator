@@ -82,7 +82,7 @@ class Pod:
         if self.orientation == 'left' or self.pod_type == 'A':
             if door_to_open == 'left':
                 # Left door
-                pygame.draw.rect(screen,self.opendoorcolourdic[self.door_types[index1]],(self.pos[0]-(self.radius+(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height))
+                self.leftdoordraw = pygame.draw.rect(screen,self.opendoorcolourdic[self.door_types[index1]],(self.pos[0]-(self.radius+(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height))
             elif door_to_open == 'right':
                 # Right door
                 pygame.draw.rect(screen,self.opendoorcolourdic[self.door_types[index2]],(self.pos[0]+(self.radius-(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height))
@@ -196,6 +196,7 @@ class Astronaut(pygame.sprite.Sprite):
         self.update_time = pygame.time.get_ticks()
         self.action = 0
         self.id = id
+        self.switch = True
         #self.PLD = PLD
         # Index 0 is IDLE animations
         animation_types = ['astronautidle', 'astronautrunning']
@@ -222,7 +223,7 @@ class Astronaut(pygame.sprite.Sprite):
     def update(self):
         self.update_animation()
 
-    def move(self, moving_left, moving_right, moving_up, moving_down):
+    def move(self, moving_left, moving_right, moving_up, moving_down, trigger_door):
         # Reset movment variables
         dx = 0
         dy = 0
@@ -251,12 +252,27 @@ class Astronaut(pygame.sprite.Sprite):
         if self.rect.right + dx > 1600:
             dx = 1600 - self.rect.right
 
+        if self.switch:
+            # Checks if astronaut is in pod walls
+            for pod in pods:
+                if inside_pod(self.rect.centerx+dx, self.rect.centery+dy, pod.pos[0], pod.pos[1], pod.radius):
+                    check = True
+                    break
 
-        # Checks if astronaut is in pod walls
-        for pod in pods:
-            if inside_pod(self.rect.centerx+dx, self.rect.centery+dy, pod.pos[0], pod.pos[1], pod.radius):
-                check = True
-                break
+        elif not self.switch:
+            # Checks if astronaut is in pod walls
+            for pod in pods:
+                if inside_pod(self.rect.centerx+dx, self.rect.centery+dy, pod.pos[0], pod.pos[1], pod.radius):
+                    check = False
+                    break
+                else:
+                    check = True
+
+        if self.rect.colliderect(405,485,30,190) and trigger_door:
+            self.switch = not self.switch
+            print('hit')
+            check = True
+            print(self.switch)
 
         if check:
             # Update rectangle position
@@ -293,9 +309,16 @@ def inside_pod(x, y, centerx, centery, radius):
     else:
         return False
 
+# Checks if player is outside a pod
+def outside_pod(x, y, centerx, centery, radius):
+    if (x - centerx)**2 + (y - centery)**2 > radius**2:
+        return True
+    else:
+        return False
+
 def checkcollided(x1,y1, x2, y2):
     distance = ((x2-x1)**2 + (y2-y1)**2)**0.5
-    if distance < 40:
+    if distance < 50:
         return True
     else:
         return False
@@ -415,7 +438,7 @@ while run:
         else:
             # 0 means idle
             astronauts[active_astronaut].update_action(0)
-        astronauts[active_astronaut].move(moving_left,moving_right,moving_up,moving_down)
+        astronauts[active_astronaut].move(moving_left,moving_right,moving_up,moving_down,trigger_door)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
