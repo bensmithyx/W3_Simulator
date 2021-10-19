@@ -225,7 +225,7 @@ class Astronaut(pygame.sprite.Sprite):
             self.speed = 0
             self.update_action(2)
 
-    def move(self, moving_left, moving_right, moving_up, moving_down, trigger_door):
+    def move(self):
         # Reset movment variables
         dx = 0
         dy = 0
@@ -470,7 +470,7 @@ while run:
         else:
             # 0 means idle
             astronauts[active_astronaut].update_action(0)
-        astronauts[active_astronaut].move(moving_left,moving_right,moving_up,moving_down,trigger_door)
+        astronauts[active_astronaut].move()
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
