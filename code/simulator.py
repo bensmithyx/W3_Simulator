@@ -106,13 +106,13 @@ class Pod:
             for pod in pods:
                 if pod.id == self.position:
                     if 'left' == self.side_to_attach_door:
-                        self.pos = (pod.pos[0]-pod.radius-self.radius,pod.pos[1])
+                        self.pos = (pod.pos[0]-pod.radius-self.radius+5,pod.pos[1])
                     elif 'top' == self.side_to_attach_door:
-                        self.pos = (pod.pos[0],pod.pos[1]-pod.radius-self.radius)
+                        self.pos = (pod.pos[0],pod.pos[1]-pod.radius-self.radius+5)
                     elif 'right' == self.side_to_attach_door:
-                        self.pos = (pod.pos[0]+pod.radius+self.radius,pod.pos[1])
+                        self.pos = (pod.pos[0]+pod.radius+self.radius-5,pod.pos[1])
                     elif 'bottom' == self.side_to_attach_door:
-                        self.pos = (pod.pos[0],pod.pos[1]+pod.radius+self.radius)
+                        self.pos = (pod.pos[0],pod.pos[1]+pod.radius+self.radius-5)
                     elif 'center' == self.side_to_attach_door:
                         self.pos = (pod.pos[0],pod.pos[1])
         # Background of circle
@@ -219,10 +219,14 @@ class Astronaut(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
 
+    def update(self):
+        self.update_animation()
+
     def move(self, moving_left, moving_right, moving_up, moving_down):
         # Reset movment variables
         dx = 0
         dy = 0
+        check = False
 
         if moving_left:
             dx = -self.speed
@@ -247,10 +251,17 @@ class Astronaut(pygame.sprite.Sprite):
         if self.rect.right + dx > 1600:
             dx = 1600 - self.rect.right
 
-        # Update rectangle position
-        self.rect.x += dx
-        self.rect.y += dy
 
+        # Checks if astronaut is in pod walls
+        for pod in pods:
+            if inside_pod(self.rect.centerx+dx, self.rect.centery+dy, pod.pos[0], pod.pos[1], pod.radius):
+                check = True
+                break
+
+        if check:
+            # Update rectangle position
+            self.rect.x += dx
+            self.rect.y += dy
 
     def update_animation(self):
         cooldown = 100
@@ -275,6 +286,12 @@ class Astronaut(pygame.sprite.Sprite):
     def draw(self):
         screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
 
+# Checks if player is inside a certain pod
+def inside_pod(x, y, centerx, centery, radius):
+    if (x - centerx)**2 + (y - centery)**2 < radius**2:
+        return True
+    else:
+        return False
 
 def checkcollided(x1,y1, x2, y2):
     distance = ((x2-x1)**2 + (y2-y1)**2)**0.5
@@ -351,7 +368,6 @@ pods = [
         #Pod(11,'New Pod',['Living Quarters','outside'],['normal','airlock'],[],6,'center','left')]
 
 pygame.init()
-
 # Creating the screen 1600
 WIDTH = 1000
 HEIGHT = int(WIDTH*1.6)
@@ -377,6 +393,7 @@ moving_down = False
 trigger_door = False
 active_astronaut = 0
 run = True
+
 while run:
     clock.tick(FPS)
     keys = pygame.key.get_pressed()
@@ -386,8 +403,9 @@ while run:
     [pod.drawpod(astronauts[active_astronaut].rect.centerx,astronauts[active_astronaut].rect.centery) for pod in pods]
 
     [astronauts[index].draw() for index in range(len(astronauts))]
+
     # Updating selected astronauts movement
-    astronauts[active_astronaut].update_animation()
+    astronauts[active_astronaut].update()
     astronauts[active_astronaut].draw()
     if astronauts[active_astronaut].alive:
         # Update astronauts[active_astronaut] actions
