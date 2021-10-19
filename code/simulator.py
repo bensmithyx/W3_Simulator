@@ -82,7 +82,7 @@ class Pod:
         if self.orientation == 'left' or self.pod_type == 'A':
             if door_to_open == 'left':
                 # Left door
-                pygame.draw.rect(screen,self.opendoorcolourdic[self.door_types[index1]],(self.pos[0]-(self.radius+(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height))
+                self.leftdoordraw = pygame.draw.rect(screen,self.opendoorcolourdic[self.door_types[index1]],(self.pos[0]-(self.radius+(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height))
             elif door_to_open == 'right':
                 # Right door
                 pygame.draw.rect(screen,self.opendoorcolourdic[self.door_types[index2]],(self.pos[0]+(self.radius-(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height))
@@ -196,7 +196,7 @@ class Astronaut(pygame.sprite.Sprite):
         self.update_time = pygame.time.get_ticks()
         self.action = 0
         self.id = id
-        #self.PLD = PLD
+        self.switch = True
         # Index 0 is IDLE animations
         animation_types = ['astronautidle', 'astronautrunning']
         for animation in animation_types:
@@ -222,12 +222,12 @@ class Astronaut(pygame.sprite.Sprite):
     def update(self):
         self.update_animation()
 
-    def move(self, moving_left, moving_right, moving_up, moving_down):
+    def move(self, moving_left, moving_right, moving_up, moving_down, trigger_door):
         # Reset movment variables
         dx = 0
         dy = 0
         check = False
-
+        check1 = False
         if moving_left:
             dx = -self.speed
             self.flip = True
@@ -251,17 +251,60 @@ class Astronaut(pygame.sprite.Sprite):
         if self.rect.right + dx > 1600:
             dx = 1600 - self.rect.right
 
+        if self.switch:
+            # Checks if astronaut is in pod walls
+            for pod in pods:
+                if inside_pod(self.rect.centerx+dx, self.rect.centery+dy, pod.pos[0], pod.pos[1], pod.radius):
+                    check = True
+                    break
 
-        # Checks if astronaut is in pod walls
+        elif not self.switch:
+            # Checks if astronaut is in pod walls
+            for pod in pods:
+                if inside_pod(self.rect.centerx+dx, self.rect.centery+dy, pod.pos[0], pod.pos[1], pod.radius):
+                    check = False
+                    break
+                else:
+                    check = True
+
+        # Gets the positions of all the airlock doors so it can check if a astronaut is trying to get to one
+        airlock_door_positions = []
         for pod in pods:
-            if inside_pod(self.rect.centerx+dx, self.rect.centery+dy, pod.pos[0], pod.pos[1], pod.radius):
+            if pod.pod_type == 'A':
+                if pod.door_types[0] == 'airlock' and pod.connecting_rooms[0] == 'outside':
+                        airlock_door_positions.append(pod.leftdoorpos)
+                elif pod.door_types[1] == 'airlock' and pod.connecting_rooms[1] == 'outside':
+                        airlock_door_positions.append(pod.topdoorpos)
+                elif pod.door_types[2] == 'airlock' and pod.connecting_rooms[2] == 'outside':
+                        airlock_door_positions.append(pod.rightdoorpos)
+                elif pod.door_types[3] == 'airlock' and pod.connecting_rooms[3] == 'outside':
+                        airlock_door_positions.append(pod.bottomdoorpos)
+            elif pod.pod_type == 'B':
+                if pod.door_types[0] == 'airlock' and pod.connecting_rooms[0] == 'outside':
+                    try:
+                        airlock_door_positions.append(pod.leftdoorpos)
+                    except:
+                        airlock_door_positions.append(pod.topdoorpos)
+                elif pod.door_types[1] == 'airlock' and pod.connecting_rooms[1] == 'outside':
+                    try:
+                        airlock_door_positions.append(pod.rightdoorpos)
+                    except:
+                        airlock_door_positions.append(pod.bottomdoorpos)
+
+        # Checks if astronaut is at an airlock door and wants to open it to get outside
+        for pos in airlock_door_positions:
+            if self.rect.colliderect(pos) and trigger_door:
                 check = True
-                break
+                check1 = True
+
+        if check1:
+            self.switch = not self.switch
 
         if check:
             # Update rectangle position
             self.rect.x += dx
             self.rect.y += dy
+            self.PLD = (self.rect.x,self.rect.y)
 
     def update_animation(self):
         cooldown = 100
@@ -293,9 +336,16 @@ def inside_pod(x, y, centerx, centery, radius):
     else:
         return False
 
+# Checks if player is outside a pod
+def outside_pod(x, y, centerx, centery, radius):
+    if (x - centerx)**2 + (y - centery)**2 > radius**2:
+        return True
+    else:
+        return False
+
 def checkcollided(x1,y1, x2, y2):
     distance = ((x2-x1)**2 + (y2-y1)**2)**0.5
-    if distance < 40:
+    if distance < 50:
         return True
     else:
         return False
@@ -415,7 +465,7 @@ while run:
         else:
             # 0 means idle
             astronauts[active_astronaut].update_action(0)
-        astronauts[active_astronaut].move(moving_left,moving_right,moving_up,moving_down)
+        astronauts[active_astronaut].move(moving_left,moving_right,moving_up,moving_down,trigger_door)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -445,7 +495,7 @@ while run:
             if event.key == pygame.K_s:
                 moving_down = False
             if event.key == pygame.K_e:
-                trigger_door = True
+                trigger_door = False
         if event.type == pygame.MOUSEBUTTONUP:
             # Get position of mouse when mousebutton is clicked
             mouse_position = pygame.mouse.get_pos()
