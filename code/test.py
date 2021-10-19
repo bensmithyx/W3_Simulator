@@ -299,6 +299,9 @@ class Astronaut(pygame.sprite.Sprite):
         if check1:
             self.switch = not self.switch
 
+        if kill:
+            self.health = 0
+
         if check:
             # Update rectangle position
             self.rect.x += dx
@@ -446,6 +449,7 @@ moving_right = False
 moving_up = False
 moving_down = False
 trigger_door = False
+kill = False
 active_astronaut = 0
 run = True
 
@@ -489,6 +493,8 @@ while run:
                 run = False
             if event.key == pygame.K_e:
                 trigger_door = True
+            if event.key == pygame.K_k:
+                kill = True
         # Keyboard button release
         if event.type == pygame.KEYUP:
             if event.key == pygame.K_a:
@@ -501,6 +507,8 @@ while run:
                 moving_down = False
             if event.key == pygame.K_e:
                 trigger_door = False
+            if event.key == pygame.K_k:
+                kill = False
         if event.type == pygame.MOUSEBUTTONUP:
             # Get position of mouse when mousebutton is clicked
             mouse_position = pygame.mouse.get_pos()
