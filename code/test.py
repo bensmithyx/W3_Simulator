@@ -46,6 +46,7 @@ class Pod:
         # Positions of the left and right doors
         self.leftdoorpos = self.pos[0]-(self.radius+(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height
         self.rightdoorpos = self.pos[0]+(self.radius-(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height
+
     def __repr__(self):
         # Shows the internal connecting_rooms (when a pod is inside another)
         show_internal_connecting_rooms = f"{f'Internal Top Door ({self.door_types[0]}) = ' + self.internal_pod[0] if self.internal_pod else ''}\n{f'Internal Bottom Door ({self.door_types[1]}) = ' + self.internal_pod[0] if self.internal_pod else ''}\n"
@@ -141,7 +142,7 @@ class Astronaut(pygame.sprite.Sprite):
         self.id = id
         self.switch = True
         # Index 0 is IDLE animations
-        animation_types = ['astronautidle', 'astronautrunning','astronautdead']
+        animation_types = ['astronautidle', 'astronautrunning','astronautdead','astronautrunningdown','astronautrunningup']
         for animation in animation_types:
             temp_list = []
             number_of_frames = len(os.listdir(f'images/{animation}'))
@@ -378,7 +379,7 @@ icon = pygame.image.load('images/space-station.png')
 pygame.display.set_icon(icon)
 
 # Making Astronauts
-astronauts = [Astronaut(0,600,475,1.5,3.5),Astronaut(1,820,490,1.5,3.5),Astronaut(2,1350,475,1.5,3.5)]
+astronauts = [Astronaut(0,600,475,2,3.5),Astronaut(1,820,490,2,3.5),Astronaut(2,1350,475,2,3.5)]
 
 # Background Image
 surface = pygame.image.load('images/surface.png')
@@ -480,14 +481,20 @@ while run:
 
     if astronauts[active_astronaut].alive:
         # Update astronauts[active_astronaut] actions
-        if moving_left or moving_right or moving_up or moving_down:
-            # 1 means running
+        if moving_left or moving_right:
+            # 1 means running left or right
             astronauts[active_astronaut].update_action(1)
+        elif moving_down:
+            # 3 is running down
+            astronauts[active_astronaut].update_action(3)
+        elif moving_up:
+            # 4 is runnig up
+            astronauts[active_astronaut].update_action(4)
         else:
             # 0 means idle
             astronauts[active_astronaut].update_action(0)
         astronauts[active_astronaut].move()
-        
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
