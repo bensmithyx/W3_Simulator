@@ -450,6 +450,7 @@ while run:
             pod.bottomdoorpos = (pod.pos[0]-(pod.door_height/2),pod.pos[1]+(pod.radius-(pod.door_width/2)),pod.door_height,pod.door_width)
 
             if keys[pygame.K_e]:
+                print(pod.connecting_rooms)
                 if pod.connecting_rooms[index1] not in ['outside','empty']:
                     if checkcollided(pod.topdoorpos[0],pod.topdoorpos[1],x,y) and pod.bottomdoorstate == False and pods[index(pod.connecting_rooms[index1])].topdoorstate == False:
                         pod.topdoorstate = not pod.topdoorstate
