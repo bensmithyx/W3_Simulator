@@ -1,6 +1,7 @@
 import pygame, os
 class Pod:
     def __init__(self, id, name, connecting_rooms, door_types, internal_pod, position, side_to_attach_door, orientation):
+        scale = 1.25
         self.pos = (0,0)
         self.side_to_attach_door = side_to_attach_door
         self.position = position
@@ -11,8 +12,8 @@ class Pod:
         self.door_types = door_types
         self.internal_pod = internal_pod
         self.colour = podcolour
-        self.door_height = 100
-        self.door_width = self.door_height/5
+        self.door_height = 60/scale
+        self.door_width = (self.door_height/8)/scale
         self.rightdoorstate = False
         self.leftdoorstate = False
         self.topdoorstate = False
@@ -28,24 +29,24 @@ class Pod:
         # If the pod is of type A it will assign the where the connecting_rooms lead to the variables so we can make a path to it
         if len(self.connecting_rooms) == 4:
             self.pod_type = 'A'
-            self.radius = 190
+            self.radius = 190/scale
             self.leftdoor = connecting_rooms[0]
             self.topdoor = connecting_rooms[1]
             self.rightdoor = connecting_rooms[2]
             self.bottomdoor = connecting_rooms[3]
         # If the pod is of type B it will assign where the connecting_rooms lead to the variables so we can make a path to it
         elif len(self.connecting_rooms) == 2:
-            self.radius = 100
+            self.radius = 100/scale
             self.pod_type = 'B'
             self.topdoor = connecting_rooms[0]
             self.bottomdoor = connecting_rooms[1]
         else:
             self.pod_type = 'unknown'
-        self.topdoorpos = (self.pos[0]-(self.door_height/2),self.pos[1]-(self.radius+(self.door_width/2)),self.door_height,self.door_width)
-        self.bottomdoorpos = (self.pos[0]-(self.door_height/2),self.pos[1]+(self.radius-(self.door_width/2)),self.door_height,self.door_width)
-        # Positions of the left and right doors
-        self.leftdoorpos = self.pos[0]-(self.radius+(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height
-        self.rightdoorpos = self.pos[0]+(self.radius-(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height
+            self.topdoorpos = (self.pos[0]-(self/2),self.pos[1]-(self.radius+(self.door_width/2)),self.door_height,self.door_width)
+            self.bottomdoorpos = (self.pos[0]-(self.door_height/2),self.pos[1]+(self.radius-(self.door_width/2)),self.door_height,self.door_width)
+            # Positions of the left and right doors
+            self.leftdoorpos = self.pos[0]-(self.radius+(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height
+            self.rightdoorpos = self.pos[0]+(self.radius-(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height
 
     def __repr__(self):
         # Shows the internal connecting_rooms (when a pod is inside another)
@@ -147,9 +148,9 @@ class Astronaut(pygame.sprite.Sprite):
             temp_list = []
             number_of_frames = len(os.listdir(f'images/{animation}'))
             for image in range(number_of_frames):
-                astronautImg = pygame.image.load(f'images/{animation}/{image}.png')
-                astronautImg = pygame.transform.scale(astronautImg, (int(astronautImg.get_width()*scale), int(astronautImg.get_height()*scale)))
-                temp_list.append(astronautImg)
+                DoorImg = pygame.image.load(f'images/{animation}/{image}.png')
+                DoorImg = pygame.transform.scale(DoorImg, (int(DoorImg.get_width()*scale), int(DoorImg.get_height()*scale)))
+                temp_list.append(DoorImg)
             self.animation_list.append(temp_list)
 
         self.animation_list.append(temp_list)
@@ -450,7 +451,6 @@ while run:
             pod.bottomdoorpos = (pod.pos[0]-(pod.door_height/2),pod.pos[1]+(pod.radius-(pod.door_width/2)),pod.door_height,pod.door_width)
 
             if keys[pygame.K_e]:
-                print(pod.connecting_rooms)
                 if pod.connecting_rooms[index1] not in ['outside','empty']:
                     if checkcollided(pod.topdoorpos[0],pod.topdoorpos[1],x,y) and pod.bottomdoorstate == False and pods[index(pod.connecting_rooms[index1])].topdoorstate == False:
                         pod.topdoorstate = not pod.topdoorstate
