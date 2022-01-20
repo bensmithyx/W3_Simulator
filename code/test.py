@@ -1,8 +1,21 @@
 import pygame, os
+
+class bcolors:
+    HEADER = '\033[95m'
+    OKBLUE = '\033[94m'
+    OKCYAN = '\033[96m'
+    OKGREEN = '\033[92m'
+    RED = '\033[93m'
+    FAIL = '\033[91m'
+    ENDC = '\033[0m'
+    BOLD = '\033[1m'
+    UNDERLINE = '\033[4m'
+
+
 class Pod():
     def __init__(self, id, name, connecting_rooms, door_types, internal_pod, position, side_to_attach_door, orientation):
         self.dooradjustment = 5
-        scale = 1
+        scale = 1.25
         self.pos = (0,0)
         self.side_to_attach_door = side_to_attach_door
         self.position = position
@@ -133,15 +146,20 @@ class Pod():
             for pod in pods:
                 if pod.id == self.position:
                     if 'left' == self.side_to_attach_door:
+                        self.rightdoorstate = next((x for x in pods if x.name == self.rightdoor), None).leftdoorstate
                         self.pos = (pod.pos[0]-pod.radius-self.radius+5,pod.pos[1])
                     elif 'top' == self.side_to_attach_door:
+                        self.bottomdoorstate = next((x for x in pods if x.name == self.bottomdoor), None).topdoorstate
                         self.pos = (pod.pos[0],pod.pos[1]-pod.radius-self.radius+5)
                     elif 'right' == self.side_to_attach_door:
+                        self.leftdoorstate = next((x for x in pods if x.name == self.leftdoor), None).rightdoorstate
                         self.pos = (pod.pos[0]+pod.radius+self.radius-5,pod.pos[1])
                     elif 'bottom' == self.side_to_attach_door:
+                        self.topdoorstate = next((x for x in pods if x.name == self.topdoor), None).bottomdoorstate
                         self.pos = (pod.pos[0],pod.pos[1]+pod.radius+self.radius-5)
                     elif 'center' == self.side_to_attach_door:
                         self.pos = (pod.pos[0],pod.pos[1])
+
         # Background of circle
         pygame.draw.circle(screen, self.colour, self.pos, self.radius, 0)
         # Outline of circle
@@ -443,7 +461,7 @@ pods = [
         Pod(6,'Engineering Workshop/Mining Operations/Storage',['Connecting Corridor','Bio-Research','outside','outside'],['normal','airlock','airlock','empty'],[],2,'right',''),
         Pod(7,'Bio-Research',['outside','Engineering Workshop/Mining Operations/Storage'],['empty','airlock'],[],6,'top','top'),
         Pod(8,'Storage (External)',['outside','outisde'],['airlock','empty'],[],(200, 800),'','top'),
-        Pod(9,'Comms And Control Centre',['Connecting Corridor','Connecting Corridor'],['normal','normal'],[],7,'center','left')
+        Pod(9,'Comms And Control Centre',['Connecting Corridor','Connecting Corridor'],['normal','normal'],[],2,'center','left')
         ## Test pods to add to spacestation
         #Pod(10,'New Pod',['Living Quarters','outside'],['airlock','normal'],[],6,'top','top')]
         #Pod(11,'New Pod',['Living Quarters','outside'],['normal','airlock'],[],6,'center','left')
@@ -480,6 +498,8 @@ active_astronaut = 0
 run = True
 
 while run:
+    #for pod in pods:
+    #    print(f'\nPod name = {pod.name}\nLeft state = {bcolors.RED if pod.leftdoorstate==True else bcolors.ENDC}{pod.leftdoorstate}{bcolors.ENDC}\nRight state = {bcolors.RED if pod.rightdoorstate==True else bcolors.ENDC}{pod.rightdoorstate}{bcolors.ENDC}\nTop state = {bcolors.RED if pod.topdoorstate==True else bcolors.ENDC}{pod.topdoorstate}{bcolors.ENDC}\nBottom State = {bcolors.RED if pod.bottomdoorstate==True else bcolors.ENDC}{pod.bottomdoorstate}{bcolors.ENDC}')
     clock.tick(FPS)
     keys = pygame.key.get_pressed()
     draw_background()
@@ -491,6 +511,7 @@ while run:
     [pod.drawpod(x,y) for pod in pods]
     # Drawing doors on the pods
     [pod.drawdoors() for pod in pods]
+
     for pod in pods:
         if pod.orientation == 'left' or pod.pod_type == 'A':
             if pod.pod_type == 'A':
@@ -501,10 +522,10 @@ while run:
             if keys[pygame.K_e]:
                 if pod.connecting_rooms[index1] != 'empty' and pod.side_to_attach_door != 'right':
                     if checkcollided(pod.leftdoorpos[0],pod.leftdoorpos[1],x,y):
-                        pod.leftdoorstate = True
+                        pod.leftdoorstate = not pod.leftdoorstate
                 if pod.connecting_rooms[index2] != 'empty' and pod.side_to_attach_door != 'left':
                     if checkcollided(pod.rightdoorpos[0],pod.rightdoorpos[1],x,y):
-                        pod.rightdoorstate = True
+                        pod.rightdoorstate = not pod.rightdoorstate
 
             if pod.connecting_rooms[index1] not in ['outside','empty']:
                 if pod.leftdoorstate == True and pod.rightdoorstate == False and pod.topdoorstate == False and pod.bottomdoorstate == False and pods[index(pod.connecting_rooms[index1])].leftdoorstate == False:
@@ -521,7 +542,7 @@ while run:
                     pod.opendoor('right')
                 else:
                     pod.closedoor('right')
-            elif pod.connecting_rooms[index2] == 'outside' and pod.side_to_attach_door != 'left':
+            elif pod.connecting_rooms[index2] == 'outside':
                 if pod.rightdoorstate == True and pod.leftdoorstate == False and pod.topdoorstate == False and pod.bottomdoorstate == False:
                     pod.opendoor('right')
                 else:
@@ -537,17 +558,10 @@ while run:
             if keys[pygame.K_e]:
                 if pod.connecting_rooms[index1] != 'empty' and pod.side_to_attach_door != 'bottom':
                     if checkcollided(pod.topdoorpos[0],pod.topdoorpos[1],x,y):
-                        pod.topdoorstate = True
-                else:
-                    if checkcollided(pod.topdoorpos[0],pod.topdoorpos[1],x,y):
-                        pod.topdoorstate = True
-
+                        pod.topdoorstate = not pod.topdoorstate
                 if pod.connecting_rooms[index2] !=  'empty' and pod.side_to_attach_door != 'top':
                     if checkcollided(pod.bottomdoorpos[0],pod.bottomdoorpos[1],x,y):
-                        pod.bottomdoorstate = True
-                else:
-                    if checkcollided(pod.bottomdoorpos[0],pod.bottomdoorpos[1],x,y):
-                        pod.bottomdoorstate = True
+                        pod.bottomdoorstate = not pod.bottomdoorstate
 
             if pod.connecting_rooms[index1] not in ['outside','empty']:
                 if pod.topdoorstate == True and pod.bottomdoorstate == False and pod.leftdoorstate == False and pod.rightdoorstate == False and pods[index(pod.connecting_rooms[index1])].topdoorstate == False:
@@ -559,18 +573,16 @@ while run:
                     pod.opendoor('top')
                 else:
                     pod.closedoor('top')
-            if pod.connecting_rooms[index2]:
+            if pod.connecting_rooms[index2] not in ['outside', 'empty']:
                 if pod.bottomdoorstate == True and pod.topdoorstate == False and pod.leftdoorstate == False and pod.rightdoorstate == False and pods[index(pod.connecting_rooms[index2])].topdoorstate == False:
                     pod.opendoor('bottom')
                 else:
                     pod.closedoor('bottom')
-            elif pod.connecting_rooms[index2]:
+            elif pod.connecting_rooms[index2] == 'outside':
                  if pod.bottomdoorstate == True and pod.topdoorstate == False and pod.leftdoorstate == False and pod.rightdoorstate == False:
                      pod.opendoor('bottom')
                  else:
                      pod.closedoor('bottom')
-
-
 
 
     # Draws the astronauts to the screen
