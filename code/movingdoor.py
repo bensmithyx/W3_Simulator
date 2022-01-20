@@ -21,19 +21,22 @@ pivot = [200, 200]
 # This offset vector will be added to the pivot point, so the
 # resulting rect will be blitted at `rect.topleft + offset`.
 offset = pg.math.Vector2(50, 0)
-angle = 1
-going_down = True
+angle = 90
+open = True
 running = True
 while running:
     for event in pg.event.get():
         if event.type == pg.QUIT:
             running = False
-    if angle == 90 or angle == 0:
-        going_down = not going_down
-    if going_down:
-        angle +=1
-    else:
-        angle -=1
+
+    if open:
+        if angle > 0:
+            angle -=1
+    if not open:
+        if angle < 90:
+            angle +=1
+
+
 
 
     '''keys = pg.key.get_pressed()
@@ -51,7 +54,7 @@ while running:
     screen.fill(BG_COLOR)
     screen.blit(rotated_image, rect)  # Blit the rotated image.
     pg.draw.circle(screen, (30, 250, 70), pivot, 3)  # Pivot point.
-    pg.draw.rect(screen, (30, 250, 70), rect, 1)  # The rect.
+    #pg.draw.rect(screen, (30, 250, 70), rect, 1)  # The rect.
     pg.display.set_caption('Angle: {}'.format(angle))
     pg.display.flip()
     clock.tick(30)

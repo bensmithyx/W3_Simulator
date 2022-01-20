@@ -48,7 +48,7 @@ class Pod:
 
 
             '''
-            self.topdoorpos = (self.pos[0]-(self/2),self.pos[1]-(self.radius+(self.door_width/2)),self.door_height,self.door_width)
+            self.topdoorpos = (self.pos[0]-(self.door_height/2),self.pos[1]-(self.radius+(self.door_width/2)),self.door_height,self.door_width)
             self.bottomdoorpos = (self.pos[0]-(self.door_height/2),self.pos[1]+(self.radius-(self.door_width/2)),self.door_height,self.door_width)
             # Positions of the left and right doors
             self.leftdoorpos = self.pos[0]-(self.radius+(self.door_width/2)),self.pos[1]-(self.door_height/2),self.door_width,self.door_height
