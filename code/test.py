@@ -11,11 +11,9 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-
 class Pod():
     def __init__(self, id, name, connecting_rooms, door_types, internal_pod, position, side_to_attach_door, orientation):
         self.dooradjustment = 0
-        scale = 1.25
         self.pos = (0,0)
         self.side_to_attach_door = side_to_attach_door
         self.position = position
@@ -54,7 +52,7 @@ class Pod():
         # If the pod is of type B it will assign where the connecting_rooms lead to the variables so we can make a path to it
         elif len(self.connecting_rooms) == 2:
             if 'airlock' in self.name:
-                self.radius = 80/scale
+                self.radius = 60/scale
                 self.pod_type = 'C'
                 self.colour = '#EDFEFF'
             else:
@@ -224,10 +222,10 @@ class Pod():
                 self.bottomangle = draw(pivot, self.bottomangle, doorcolour)
 
 class Astronaut(pygame.sprite.Sprite):
-    def __init__(self, id, x, y, scale, speed):
+    def __init__(self, id, x, y, scale):
         pygame.sprite.Sprite.__init__(self)
         self.alive = True
-        self.speed = speed
+        self.speed = 3.5
         self.direction = 1
         self.health = 100
         self.flip = False
@@ -444,6 +442,8 @@ def draw_background():
     # Adding background image to screen
     screen.blit(surface,(0,0))
 
+
+scale = 1.25
 # Colours
 lightgrey = (170,170,170)
 grey = (144,144,144)
@@ -456,19 +456,21 @@ lightblue = (0,153,255)
 podcolour = lightgrey
 # List of all the pods if a new one is to be added it can be done here
 pods = [
-        Pod(1,'Living Quarters',['outside','outside','Connecting Corridor','outside'],['airlock','empty','normal','empty'],[],(550,500),'',''),
+        Pod(1,'Living Quarters',['outside','outside','Connecting Corridor','outside'],['airlock','empty','normal','empty'],[],(550,450),'',''),
         Pod(2,'Connecting Corridor',['Living Quarters','Food Production','Engineering Workshop/Mining Operations/Storage','Life Support/Power Plant/Recycling'],['normal','normal','normal','normal'],['Comms And Control Centre'],1,'right',''),
-        Pod(3,'Emergency Quarters',['outside','outside','outside','outside'],['empty','empty','empty','airlock'],[],(220, 250),'',''),
+        Pod(3,'Emergency Quarters',['outside','outside','outside','outside'],['empty','empty','empty','airlock'],[],(220, 170),'',''),
         Pod(4,'Life Support/Power Plant/Recycling',['Connecting Corridor','outside'],['normal','airlock'],[],2,'bottom','top'),
         Pod(5,'Food Production',['outside','Connecting Corridor'],['empty','normal'],[],2,'top','top'),
         Pod(6,'Engineering Workshop/Mining Operations/Storage',['Connecting Corridor','Bio-Research','outside','outside'],['normal','airlock','airlock','empty'],[],2,'right',''),
         Pod(7,'Bio-Research',['outside','Engineering Workshop/Mining Operations/Storage'],['empty','airlock'],[],12,'top','top'),
-        Pod(8,'Storage (External)',['outside','outisde'],['airlock','empty'],[],(200, 700),'','top'),
+        Pod(8,'Storage (External)',['outside','outisde'],['airlock','empty'],[],(200, 690),'','top'),
         Pod(9,'Comms And Control Centre',['Connecting Corridor','Connecting Corridor'],['normal','normal'],[],2,'center','left'),
         ## Test pods to add to spacestation
         Pod(10,'airlock1',['outside','Living Quarters'],['airlock','airlock'],[],1,'left','left'),
-        Pod(11,'airlock2',['Emergency Quarters','outside'],['airlock','airlock'],[],6,'right','left'),
-        Pod(12,'airlock2',['Emergency Quarters','Bio-Research'],['airlock','airlock'],[],6,'top','top')
+        Pod(11,'airlock2',['Engineering Workshop/Mining Operations/Storage','outside'],['airlock','airlock'],[],6,'right','left'),
+        Pod(12,'airlock3',['Engineering Workshop/Mining Operations/Storage','Bio-Research'],['airlock','airlock'],[],6,'top','top'),
+        Pod(13,'airlock4',['Emergency Quarters','outside'],['airlock','airlock'],[],3,'bottom','top'),
+        Pod(14,'airlock5',['outside','Storage (External)'],['airlock','airlock'],[],8,'top','top')
         #Pod(11,'New Pod',['Living Quarters','outside'],['normal','airlock'],[],6,'center','left')
         ]
 
@@ -484,7 +486,7 @@ icon = pygame.image.load('images/space-station.png')
 pygame.display.set_icon(icon)
 
 # Making Astronauts
-astronauts = [Astronaut(0,600,475,2,3.5),Astronaut(1,820,490,2,3.5),Astronaut(2,1350,475,2,3.5)]
+astronauts = [Astronaut(0,600,450,2/scale),Astronaut(1,820,450,2/scale),Astronaut(2,1350,450,2/scale),Astronaut(2,1100,445,2/scale)]
 
 # Background Image
 surface = pygame.image.load('images/surface.png')
