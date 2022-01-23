@@ -11,11 +11,9 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
-
 class Pod():
     def __init__(self, id, name, connecting_rooms, door_types, internal_pod, position, side_to_attach_door, orientation):
         self.dooradjustment = 0
-        scale = 1.25
         self.pos = (0,0)
         self.side_to_attach_door = side_to_attach_door
         self.position = position
@@ -54,7 +52,7 @@ class Pod():
         # If the pod is of type B it will assign where the connecting_rooms lead to the variables so we can make a path to it
         elif len(self.connecting_rooms) == 2:
             if 'airlock' in self.name:
-                self.radius = 80/scale
+                self.radius = 60/scale
                 self.pod_type = 'C'
                 self.colour = '#EDFEFF'
             else:
@@ -77,10 +75,6 @@ class Pod():
             return f"Name = {self.name}\nPod Type = {self.pod_type}\nTop Door ({self.door_types[0]}) = {self.topdoor}\nBottom Door ({self.door_types[1]}) = {self.bottomdoor}\nConnected to = {self.side_to_attach_door}\n"
 
     def closedoor(self, door_to_close):
-        if self.pod_type == 'A':
-            index1, index2 = 0, 2
-        else:
-            index1, index2 = 0, 1
         if self.orientation == 'left' or self.pod_type == 'A':
             if door_to_close == 'left':
                 # Left door
@@ -95,10 +89,6 @@ class Pod():
                 else:
                     self.rightdoorstate = False
         if self.orientation == 'top' or self.pod_type == 'A':
-            if self.pod_type == 'A':
-                index1, index2 = 1, 3
-            else:
-                index1, index2 = 0, 1
             if door_to_close  == 'top':
                 # Top door
                 if self.topangle > 0:
@@ -112,11 +102,8 @@ class Pod():
                 else:
                     self.bottomdoorstate = False
 
+
     def opendoor(self, door_to_open):
-        if self.pod_type == 'A':
-            index1, index2 = 0, 2
-        else:
-            index1, index2 = 0, 1
         if self.orientation == 'left' or self.pod_type == 'A':
             if door_to_open == 'left':
                 if self.leftangle > 0:
@@ -127,10 +114,6 @@ class Pod():
                     self.rightangle -=1
                 # Right door
         if self.orientation == 'top' or self.pod_type == 'A':
-            if self.pod_type == 'A':
-                index1, index2 = 1, 3
-            else:
-                index1, index2 = 0, 1
             if door_to_open  == 'top':
                 if self.topangle < 90 :
                     self.topangle +=1
@@ -139,6 +122,7 @@ class Pod():
                 if self.bottomangle < 90:
                     self.bottomangle +=1
                 # Bottom door
+
 
 
     def drawpod(self, x,y):
@@ -224,10 +208,10 @@ class Pod():
                 self.bottomangle = draw(pivot, self.bottomangle, doorcolour)
 
 class Astronaut(pygame.sprite.Sprite):
-    def __init__(self, id, x, y, scale, speed):
+    def __init__(self, id, x, y, scale):
         pygame.sprite.Sprite.__init__(self)
         self.alive = True
-        self.speed = speed
+        self.speed = 3.5
         self.direction = 1
         self.health = 100
         self.flip = False
@@ -444,6 +428,8 @@ def draw_background():
     # Adding background image to screen
     screen.blit(surface,(0,0))
 
+
+scale = 1.25
 # Colours
 lightgrey = (170,170,170)
 grey = (144,144,144)
@@ -456,19 +442,21 @@ lightblue = (0,153,255)
 podcolour = lightgrey
 # List of all the pods if a new one is to be added it can be done here
 pods = [
-        Pod(1,'Living Quarters',['outside','outside','Connecting Corridor','outside'],['airlock','empty','normal','empty'],[],(550,500),'',''),
+        Pod(1,'Living Quarters',['outside','outside','Connecting Corridor','outside'],['airlock','empty','normal','empty'],[],(550,450),'',''),
         Pod(2,'Connecting Corridor',['Living Quarters','Food Production','Engineering Workshop/Mining Operations/Storage','Life Support/Power Plant/Recycling'],['normal','normal','normal','normal'],['Comms And Control Centre'],1,'right',''),
-        Pod(3,'Emergency Quarters',['outside','outside','outside','outside'],['empty','empty','empty','airlock'],[],(220, 250),'',''),
+        Pod(3,'Emergency Quarters',['outside','outside','outside','outside'],['empty','empty','empty','airlock'],[],(220, 170),'',''),
         Pod(4,'Life Support/Power Plant/Recycling',['Connecting Corridor','outside'],['normal','airlock'],[],2,'bottom','top'),
         Pod(5,'Food Production',['outside','Connecting Corridor'],['empty','normal'],[],2,'top','top'),
         Pod(6,'Engineering Workshop/Mining Operations/Storage',['Connecting Corridor','Bio-Research','outside','outside'],['normal','airlock','airlock','empty'],[],2,'right',''),
         Pod(7,'Bio-Research',['outside','Engineering Workshop/Mining Operations/Storage'],['empty','airlock'],[],12,'top','top'),
-        Pod(8,'Storage (External)',['outside','outisde'],['airlock','empty'],[],(200, 700),'','top'),
+        Pod(8,'Storage (External)',['outside','outisde'],['airlock','empty'],[],(200, 690),'','top'),
         Pod(9,'Comms And Control Centre',['Connecting Corridor','Connecting Corridor'],['normal','normal'],[],2,'center','left'),
         ## Test pods to add to spacestation
         Pod(10,'airlock1',['outside','Living Quarters'],['airlock','airlock'],[],1,'left','left'),
-        Pod(11,'airlock2',['Emergency Quarters','outside'],['airlock','airlock'],[],6,'right','left'),
-        Pod(12,'airlock2',['Emergency Quarters','Bio-Research'],['airlock','airlock'],[],6,'top','top')
+        Pod(11,'airlock2',['Engineering Workshop/Mining Operations/Storage','outside'],['airlock','airlock'],[],6,'right','left'),
+        Pod(12,'airlock3',['Engineering Workshop/Mining Operations/Storage','Bio-Research'],['airlock','airlock'],[],6,'top','top'),
+        Pod(13,'airlock4',['Emergency Quarters','outside'],['airlock','airlock'],[],3,'bottom','top'),
+        Pod(14,'airlock5',['outside','Storage (External)'],['airlock','airlock'],[],8,'top','top')
         #Pod(11,'New Pod',['Living Quarters','outside'],['normal','airlock'],[],6,'center','left')
         ]
 
@@ -484,11 +472,11 @@ icon = pygame.image.load('images/space-station.png')
 pygame.display.set_icon(icon)
 
 # Making Astronauts
-astronauts = [Astronaut(0,600,475,2,3.5),Astronaut(1,820,490,2,3.5),Astronaut(2,1350,475,2,3.5)]
+astronauts = [Astronaut(0,600,450,2/scale),Astronaut(1,820,450,2/scale),Astronaut(2,1350,450,2/scale),Astronaut(2,1100,445,2/scale)]
 
 # Background Image
 surface = pygame.image.load('images/surface.png')
-
+surface = pygame.transform.scale(surface=surface, size=(info.current_w, info.current_h))
 clock = pygame.time.Clock()
 FPS = 30
 
@@ -500,7 +488,6 @@ trigger_door = False
 kill = False
 active_astronaut = 0
 run = True
-
 while run:
     #for pod in pods:
     #    print(f'\nPod name = {pod.name}\nLeft state = {bcolors.WARNING if pod.leftdoorstate==True else bcolors.ENDC}{pod.leftdoorstate}{bcolors.ENDC}\nRight state = {bcolors.WARNING if pod.rightdoorstate==True else bcolors.ENDC}{pod.rightdoorstate}{bcolors.ENDC}\nTop state = {bcolors.WARNING if pod.topdoorstate==True else bcolors.ENDC}{pod.topdoorstate}{bcolors.ENDC}\nBottom State = {bcolors.WARNING if pod.bottomdoorstate==True else bcolors.ENDC}{pod.bottomdoorstate}{bcolors.ENDC}')
@@ -515,6 +502,13 @@ while run:
     [pod.drawpod(x,y) for pod in pods]
     # Drawing doors on the pods
     [pod.drawdoors() for pod in pods]
+
+    internal_pod_check = ''
+
+    internal_pods = {}
+    for pod in pods:
+        if len(pod.internal_pod):
+            internal_pods[pod.name]=pod.internal_pod[0]
 
     for pod in pods:
         if pod.orientation == 'left' or pod.pod_type == 'A':
@@ -531,8 +525,25 @@ while run:
                     if checkcollided(pod.rightdoorpos[0],pod.rightdoorpos[1],x,y):
                         pod.rightdoorstate = not pod.rightdoorstate
 
+            '''if pod.name in internal_pods.values():
+                print('This door is from a child')
+                for parentpod in pods:
+                    #print(internal_pod_check, parentpod.leftdoorstate, parentpod.rightdoorstate, parentpod.bottomdoorstate, parentpod.topdoorstate)
+                    if parentpod.name == list(internal_pods.keys())[list(internal_pods.values()).index(pod.name)] and parentpod.leftdoorstate == False and parentpod.rightdoorstate == False and parentpod.bottomdoorstate == False and parentpod.topdoorstate == False:
+                        pod.opendoor('left')
+            elif len(pod.internal_pod):
+                print('This door is from a parent')
+                for childpod in pods:
+                    #print(childpod.name,childpod.leftdoorstate,childpod.rightdoorstate,childpod.topdoorstate,childpod.bottomdoorstate)
+                    if childpod.name == pod.internal_pod[0] and childpod.leftdoorstate == False and childpod.rightdoorstate == False:
+                        pod.opendoor('left')
+                    else:
+                        pod.closedoor('left')
+            else:
+                pod.closedoor('left')'''
+
             if pod.connecting_rooms[index1] not in ['outside','empty']:
-                if pod.leftdoorstate == True and pod.rightdoorstate == False and pod.topdoorstate == False and pod.bottomdoorstate == False and pods[index(pod.connecting_rooms[index1])].leftdoorstate == False:
+                if pod.leftdoorstate == True and pod.rightdoorstate == False and pod.topdoorstate == False and pod.bottomdoorstate == False and pods[index(pod.connecting_rooms[index1])].leftdoorstate == False and pods[index(pod.connecting_rooms[index1])].topdoorstate == False and pods[index(pod.connecting_rooms[index1])].bottomdoorstate == False:
                     pod.opendoor('left')
                 else:
                     pod.closedoor('left')
@@ -542,7 +553,7 @@ while run:
                 else:
                     pod.closedoor('left')
             if pod.connecting_rooms[index2] not in ['outside','empty']:
-                if pod.rightdoorstate == True and pod.leftdoorstate == False and pod.topdoorstate == False and pod.bottomdoorstate == False and pods[index(pod.connecting_rooms[index2])].rightdoorstate == False:
+                if pod.rightdoorstate == True and pod.leftdoorstate == False and pod.topdoorstate == False and pod.bottomdoorstate == False and pods[index(pod.connecting_rooms[index2])].rightdoorstate == False and pods[index(pod.connecting_rooms[index2])].topdoorstate == False and pods[index(pod.connecting_rooms[index2])].bottomdoorstate == False:
                     pod.opendoor('right')
                 else:
                     pod.closedoor('right')
@@ -568,7 +579,7 @@ while run:
                         pod.bottomdoorstate = not pod.bottomdoorstate
 
             if pod.connecting_rooms[index1] not in ['outside','empty']:
-                if pod.topdoorstate == True and pod.bottomdoorstate == False and pod.leftdoorstate == False and pod.rightdoorstate == False and pods[index(pod.connecting_rooms[index1])].topdoorstate == False:
+                if pod.topdoorstate == True and pod.bottomdoorstate == False and pod.leftdoorstate == False and pod.rightdoorstate == False and pods[index(pod.connecting_rooms[index1])].topdoorstate == False and pods[index(pod.connecting_rooms[index1])].rightdoorstate == False and pods[index(pod.connecting_rooms[index1])].leftdoorstate == False:
                     pod.opendoor('top')
                 else:
                      pod.closedoor('top')
@@ -578,7 +589,7 @@ while run:
                 else:
                     pod.closedoor('top')
             if pod.connecting_rooms[index2] not in ['outside', 'empty']:
-                if pod.bottomdoorstate == True and pod.topdoorstate == False and pod.leftdoorstate == False and pod.rightdoorstate == False and pods[index(pod.connecting_rooms[index2])].topdoorstate == False:
+                if pod.bottomdoorstate == True and pod.topdoorstate == False and pod.leftdoorstate == False and pod.rightdoorstate == False and pods[index(pod.connecting_rooms[index2])].bottomdoorstate == False and pods[index(pod.connecting_rooms[index2])].rightdoorstate == False and pods[index(pod.connecting_rooms[index2])].leftdoorstate == False:
                     pod.opendoor('bottom')
                 else:
                     pod.closedoor('bottom')
@@ -587,6 +598,11 @@ while run:
                      pod.opendoor('bottom')
                  else:
                      pod.closedoor('bottom')
+
+
+    '''for pod in pods:
+        if pod.id in [1,2]:
+            print(pod.name,pod.leftdoorstate,pod.rightdoorstate,pod.topdoorstate,pod.bottomdoorstate)'''
 
 
     # Draws the astronauts to the screen
