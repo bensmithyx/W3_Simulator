@@ -31,8 +31,8 @@ class Pod():
         self.topdoorstate = False
         self.bottomdoorstate = False
         # Adds doors colours based on what type of door it is
-        self.doorcolourdic = {'empty':(0,0,0),'normal':doorcolour,'airlock':lightblue}
-        self.opendoorcolourdic = {'empty':(0,0,0),'normal':(0,255,0),'airlock':(0,255,0)}
+        self.doorcolourdic = {'empty':(0,0,0),'normal':doorcolour,'airlock':lightblue,'fakeairlock':lightblue}
+        self.opendoorcolourdic = {'empty':(0,0,0),'normal':open,'airlock':lightblue,'fakeairlock':lightblue}
         self.leftangle = 90
         self.rightangle = 90
         self.topangle = 0
@@ -123,8 +123,6 @@ class Pod():
                     self.bottomangle +=1
                 # Bottom door
 
-
-
     def drawpod(self, x,y):
         if isinstance(self.position,tuple):
             self.pos = self.position
@@ -177,13 +175,19 @@ class Pod():
             if self.side_to_attach_door != 'right' and self.door_types[index1] != 'empty':
                 # Store the original center position of the surface.
                 pivot = self.leftdoorpos[0]+self.dooradjustment,self.leftdoorpos[1]
-                doorcolour = self.doorcolourdic[self.door_types[index1]]
+                if self.leftangle != 90:
+                    doorcolour = open
+                else:
+                    doorcolour = self.doorcolourdic[self.door_types[index1]]
                 self.leftangle = draw(pivot, self.leftangle, doorcolour)
 
             # Right door
             if self.side_to_attach_door != 'left' and self.door_types[index2] != 'empty':
                 pivot = [self.rightdoorpos[0]+self.dooradjustment,self.rightdoorpos[1]]
-                doorcolour = self.doorcolourdic[self.door_types[index2]]
+                if self.rightangle != 90:
+                    doorcolour = open
+                else:
+                    doorcolour = self.doorcolourdic[self.door_types[index2]]
                 self.rightangle = draw(pivot, self.rightangle, doorcolour)
 
         if self.orientation == 'top' or self.pod_type == 'A':
@@ -198,13 +202,19 @@ class Pod():
             # Top door
             if self.side_to_attach_door != 'bottom' and self.door_types[index1] != 'empty':
                 pivot = [self.topdoorpos[0]+self.dooradjustment,self.topdoorpos[1]]
-                doorcolour = self.doorcolourdic[self.door_types[index1]]
+                if self.topangle != 0:
+                    doorcolour = open
+                else:
+                    doorcolour = self.doorcolourdic[self.door_types[index1]]
                 self.topangle = draw(pivot, self.topangle, doorcolour)
 
             # Bottom door
             if self.side_to_attach_door != 'top' and self.door_types[index2] != 'empty':
                 pivot = [self.bottomdoorpos[0]+self.dooradjustment,self.bottomdoorpos[1]]
-                doorcolour = self.doorcolourdic[self.door_types[index2]]
+                if self.bottomangle != 0:
+                    doorcolour = open
+                else:
+                    doorcolour = self.doorcolourdic[self.door_types[index2]]
                 self.bottomangle = draw(pivot, self.bottomangle, doorcolour)
 
 class Astronaut(pygame.sprite.Sprite):
@@ -442,21 +452,22 @@ lightblue = (0,153,255)
 podcolour = lightgrey
 # List of all the pods if a new one is to be added it can be done here
 pods = [
-        Pod(1,'Living Quarters',['outside','outside','Connecting Corridor','outside'],['airlock','empty','normal','empty'],[],(550,450),'',''),
+        Pod(1,'Living Quarters',['outside','outside','Connecting Corridor','outside'],['fakeairlock','empty','normal','empty'],[],(550,450),'',''),
         Pod(2,'Connecting Corridor',['Living Quarters','Food Production','Engineering Workshop/Mining Operations/Storage','Life Support/Power Plant/Recycling'],['normal','normal','normal','normal'],['Comms And Control Centre'],1,'right',''),
-        Pod(3,'Emergency Quarters',['outside','outside','outside','outside'],['empty','empty','empty','airlock'],[],(220, 170),'',''),
-        Pod(4,'Life Support/Power Plant/Recycling',['Connecting Corridor','outside'],['normal','airlock'],[],2,'bottom','top'),
+        Pod(3,'Emergency Quarters',['outside','outside','outside','outside'],['empty','empty','empty','fakeairlock'],[],(220, 170),'',''),
+        Pod(4,'Life Support/Power Plant/Recycling',['Connecting Corridor','outside'],['normal','fakeairlock'],[],2,'bottom','top'),
         Pod(5,'Food Production',['outside','Connecting Corridor'],['empty','normal'],[],2,'top','top'),
-        Pod(6,'Engineering Workshop/Mining Operations/Storage',['Connecting Corridor','Bio-Research','outside','outside'],['normal','airlock','airlock','empty'],[],2,'right',''),
-        Pod(7,'Bio-Research',['outside','Engineering Workshop/Mining Operations/Storage'],['empty','airlock'],[],12,'top','top'),
-        Pod(8,'Storage (External)',['outside','outisde'],['airlock','empty'],[],(200, 690),'','top'),
+        Pod(6,'Engineering Workshop/Mining Operations/Storage',['Connecting Corridor','Bio-Research','outside','outside'],['normal','fakeairlock','fakeairlock','empty'],[],2,'right',''),
+        Pod(7,'Bio-Research',['outside','Engineering Workshop/Mining Operations/Storage'],['empty','fakeairlock'],[],12,'top','top'),
+        Pod(8,'Storage (External)',['outside','outisde'],['fakeairlock','empty'],[],(200, 690),'','top'),
         Pod(9,'Comms And Control Centre',['Connecting Corridor','Connecting Corridor'],['normal','normal'],[],2,'center','left'),
         ## Test pods to add to spacestation
-        Pod(10,'airlock1',['outside','Living Quarters'],['airlock','airlock'],[],1,'left','left'),
-        Pod(11,'airlock2',['Engineering Workshop/Mining Operations/Storage','outside'],['airlock','airlock'],[],6,'right','left'),
-        Pod(12,'airlock3',['Engineering Workshop/Mining Operations/Storage','Bio-Research'],['airlock','airlock'],[],6,'top','top'),
-        Pod(13,'airlock4',['Emergency Quarters','outside'],['airlock','airlock'],[],3,'bottom','top'),
-        Pod(14,'airlock5',['outside','Storage (External)'],['airlock','airlock'],[],8,'top','top')
+        Pod(10,'airlock1',['outside','Living Quarters'],['airlock','fakeairlock'],[],1,'left','left'),
+        Pod(11,'airlock2',['Engineering Workshop/Mining Operations/Storage','outside'],['fakeairlock','airlock'],[],6,'right','left'),
+        Pod(12,'airlock3',['Engineering Workshop/Mining Operations/Storage','Bio-Research'],['fakeairlock','fakeairlock'],[],6,'top','top'),
+        Pod(13,'airlock4',['Emergency Quarters','outside'],['fakeairlock','airlock'],[],3,'bottom','top'),
+        Pod(14,'airlock5',['outside','Storage (External)'],['airlock','fakeairlock'],[],8,'top','top'),
+        Pod(15,'airlock5',['Life Support/Power Plant/Recycling','outside'],['fakeairlock','airlock'],[],4,'bottom','top')
         #Pod(11,'New Pod',['Living Quarters','outside'],['normal','airlock'],[],6,'center','left')
         ]
 
@@ -529,18 +540,7 @@ while run:
 
             if pod.connecting_rooms[index1] not in ['outside','empty']:
                 if pod.leftdoorstate == True and pod.rightdoorstate == False and pod.topdoorstate == False and pod.bottomdoorstate == False and pods[index(pod.connecting_rooms[index1])].leftdoorstate == False and pods[index(pod.connecting_rooms[index1])].topdoorstate == False and pods[index(pod.connecting_rooms[index1])].bottomdoorstate == False:
-                    if pod.name in internal_pods.values():
-                        print('This door is from a child')
-                        for parentpod in pods:
-                            #print(internal_pod_check, parentpod.leftdoorstate, parentpod.rightdoorstate, parentpod.bottomdoorstate, parentpod.topdoorstate)
-                            if parentpod.name == list(internal_pods.keys())[list(internal_pods.values()).index(pod.name)] and parentpod.leftdoorstate == False and parentpod.rightdoorstate == False and parentpod.bottomdoorstate == False and parentpod.topdoorstate == False:
-                                pod.opendoor('left')
-                    elif len(pod.internal_pod):
-                        print('This door is from a parent')
-                        for childpod in pods:
-                            #print(childpod.name,childpod.leftdoorstate,childpod.rightdoorstate,childpod.topdoorstate,childpod.bottomdoorstate)
-                            if childpod.name == pod.internal_pod[0] and childpod.leftdoorstate == False and childpod.rightdoorstate == False:
-                                pod.opendoor('left')
+                    pod.opendoor('left')
                 else:
                     pod.closedoor('left')
             elif pod.connecting_rooms[index1] == 'outside':
