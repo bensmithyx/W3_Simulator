@@ -448,6 +448,7 @@ def draw_background():
     screen.blit(surface,(0,0))
 
 scale = 1.25
+multiplier = 1
 # Colours
 lightgrey = (170,170,170)
 grey = (144,144,144)
@@ -531,7 +532,7 @@ while run:
         if len(pod.internal_pod):
             internal_pods[pod.name]=pod.internal_pod[0]
 
-    if counter % 4 == 0:
+    if counter % (4/multiplier) == 0:
         for pod in pods:
             if pod.orientation == 'left' or pod.pod_type == 'A':
                 if pod.pod_type == 'A':
