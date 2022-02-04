@@ -531,6 +531,7 @@ while run:
     # Drawing doors on the pods
     [pod.drawdoors() for pod in pods]
 
+
     internal_pod_check = ''
 
     internal_pods = {}
