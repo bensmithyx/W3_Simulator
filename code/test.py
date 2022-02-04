@@ -25,8 +25,7 @@ class Doors():
 
 
 class Pod():
-    def __init__(self, id, name, connecting_rooms, door_types, internal_pod, position, side_to_attach_door, orientation,lockdowns):
-        self.lockdowns = lockdowns
+    def __init__(self, id, name, connecting_rooms, door_types, internal_pod, position, side_to_attach_door, orientation):
         self.dooradjustment = 0
         self.pos = (0,0)
         self.side_to_attach_door = side_to_attach_door
@@ -186,9 +185,7 @@ class Pod():
             if self.side_to_attach_door != 'right' and self.door_types[index1] != 'empty':
                 # Store the original center position of the surface.
                 pivot = self.leftdoorpos[0]+self.dooradjustment,self.leftdoorpos[1]
-                if self.lockdowns[0]:
-                    doorcolour = closed
-                elif self.leftangle != 90:
+                if self.leftangle != 90:
                     doorcolour = open
                 else:
                     doorcolour = self.doorcolourdic[self.door_types[index1]]
@@ -197,9 +194,7 @@ class Pod():
             # Right door
             if self.side_to_attach_door != 'left' and self.door_types[index2] != 'empty':
                 pivot = [self.rightdoorpos[0]+self.dooradjustment,self.rightdoorpos[1]]
-                if self.lockdowns[1]:
-                    doorcolour = closed
-                elif self.rightangle != 90:
+                if self.rightangle != 90:
                     doorcolour = open
                 else:
                     doorcolour = self.doorcolourdic[self.door_types[index2]]
@@ -219,8 +214,6 @@ class Pod():
                 pivot = [self.topdoorpos[0]+self.dooradjustment,self.topdoorpos[1]]
                 if self.topangle != 0:
                     doorcolour = open
-                elif self.lockdowns[2]:
-                    doorcolour = closed
                 else:
                     doorcolour = self.doorcolourdic[self.door_types[index1]]
                 self.topangle = self.topdoor.draw(pivot, self.topangle, doorcolour)
@@ -230,8 +223,6 @@ class Pod():
                 pivot = [self.bottomdoorpos[0]+self.dooradjustment,self.bottomdoorpos[1]]
                 if self.bottomangle != 0:
                     doorcolour = open
-                elif self.lockdowns[3]:
-                    doorcolour = closed
                 else:
                     doorcolour = self.doorcolourdic[self.door_types[index2]]
                 self.bottomangle = self.bottomdoor.draw(pivot, self.bottomangle, doorcolour)
@@ -478,22 +469,22 @@ lightblue = (0,153,255)
 podcolour = lightgrey
 # List of all the pods if a new one is to be added it can be done here
 pods = [
-        Pod(1,'Living Quarters',['airlock1','outside','Connecting Corridor','outside'],['fakeairlock','empty','normal','empty'],[],(550,450),'','',[False,False,False,False]),
-        Pod(2,'Connecting Corridor',['Living Quarters','Food Production','Engineering Workshop/Mining Operations/Storage','Life Support/Power Plant/Recycling'],['normal','normal','normal','normal'],['Comms And Control Centre'],1,'right','',[False,False,False,False]),
-        Pod(3,'Emergency Quarters',['outside','outside','outside','airlock4'],['empty','empty','empty','fakeairlock'],[],(220, 170),'','',[False,False,False,False]),
-        Pod(4,'Life Support/Power Plant/Recycling',['Connecting Corridor','airlock5'],['normal','fakeairlock'],[],2,'bottom','top',[False,False,False,False]),
-        Pod(5,'Food Production',['outside','Connecting Corridor'],['empty','normal'],[],2,'top','top',[False,False,False,False]),
-        Pod(6,'Engineering Workshop/Mining Operations/Storage',['Connecting Corridor','airlock3','airlock2','outside'],['normal','fakeairlock','fakeairlock','empty'],[],2,'right','',[False,False,False,False]),
-        Pod(7,'Bio-Research',['outside','airlock3'],['empty','fakeairlock'],[],12,'top','top',[False,False,False,False]),
-        Pod(8,'Storage (External)',['airlock5','outisde'],['fakeairlock','empty'],[],(200, 690),'','top',[False,False,False,False]),
-        Pod(9,'Comms And Control Centre',['Connecting Corridor','Connecting Corridor'],['normal','normal'],[],2,'center','left',[False,False,False,False]),
+        Pod(1,'Living Quarters',['airlock1','outside','Connecting Corridor','outside'],['fakeairlock','empty','normal','empty'],[],(550,450),'',''),
+        Pod(2,'Connecting Corridor',['Living Quarters','Food Production','Engineering Workshop/Mining Operations/Storage','Life Support/Power Plant/Recycling'],['normal','normal','normal','normal'],['Comms And Control Centre'],1,'right',''),
+        Pod(3,'Emergency Quarters',['outside','outside','outside','airlock4'],['empty','empty','empty','fakeairlock'],[],(220, 170),'',''),
+        Pod(4,'Life Support/Power Plant/Recycling',['Connecting Corridor','airlock5'],['normal','fakeairlock'],[],2,'bottom','top'),
+        Pod(5,'Food Production',['outside','Connecting Corridor'],['empty','normal'],[],2,'top','top'),
+        Pod(6,'Engineering Workshop/Mining Operations/Storage',['Connecting Corridor','airlock3','airlock2','outside'],['normal','fakeairlock','fakeairlock','empty'],[],2,'right',''),
+        Pod(7,'Bio-Research',['outside','airlock3'],['empty','fakeairlock'],[],12,'top','top'),
+        Pod(8,'Storage (External)',['airlock5','outisde'],['fakeairlock','empty'],[],(200, 690),'','top'),
+        Pod(9,'Comms And Control Centre',['Connecting Corridor','Connecting Corridor'],['normal','normal'],[],2,'center','left'),
         ## Test pods to add to spacestation
-        Pod(10,'airlock1',['outside','Living Quarters'],['airlock','fakeairlock'],[],1,'left','left',[False,False,False,False]),
-        Pod(11,'airlock2',['Engineering Workshop/Mining Operations/Storage','outside'],['fakeairlock','airlock'],[],6,'right','left',[False,False,False,False]),
-        Pod(12,'airlock3',['Bio-Research','Engineering Workshop/Mining Operations/Storage'],['fakeairlock','fakeairlock'],[],6,'top','top',[False,False,False,False]),
-        Pod(13,'airlock4',['Emergency Quarters','outside'],['fakeairlock','airlock'],[],3,'bottom','top',[False,False,False,False]),
-        Pod(14,'airlock5',['outside','Storage (External)'],['airlock','fakeairlock'],[],8,'top','top',[False,False,False,False]),
-        Pod(15,'airlock5',['Life Support/Power Plant/Recycling','outside'],['fakeairlock','airlock'],[],4,'bottom','top',[False,False,False,False])
+        Pod(10,'airlock1',['outside','Living Quarters'],['airlock','fakeairlock'],[],1,'left','left'),
+        Pod(11,'airlock2',['Engineering Workshop/Mining Operations/Storage','outside'],['fakeairlock','airlock'],[],6,'right','left'),
+        Pod(12,'airlock3',['Bio-Research','Engineering Workshop/Mining Operations/Storage'],['fakeairlock','fakeairlock'],[],6,'top','top'),
+        Pod(13,'airlock4',['Emergency Quarters','outside'],['fakeairlock','airlock'],[],3,'bottom','top'),
+        Pod(14,'airlock5',['outside','Storage (External)'],['airlock','fakeairlock'],[],8,'top','top'),
+        Pod(15,'airlock5',['Life Support/Power Plant/Recycling','outside'],['fakeairlock','airlock'],[],4,'bottom','top')
         #Pod(11,'New Pod',['Living Quarters','outside'],['normal','airlock'],[],6,'center','left')
         ]
 
