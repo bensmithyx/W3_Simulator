@@ -23,7 +23,6 @@ class Doors():
         #pygame.draw.circle(screen, (30, 250, 70), pivot, 3)
         return self.angle
 
-
 class Pod():
     def __init__(self, id, name, connecting_rooms, door_types, internal_pod, position, side_to_attach_door, orientation):
         self.dooradjustment = 0
@@ -447,14 +446,11 @@ def lockdown(name):
         if name in pod.bottomdoor.pod_names:
             pod.bottomdoor.lockdown = True
 
-
 def draw_background():
     # Fills the screen just in case image doesn't load
     screen.fill((255,153,102))
     # Adding background image to screen
     screen.blit(surface,(0,0))
-
-
 
 scale = 1.25
 # Colours
@@ -531,7 +527,6 @@ while run:
     # Drawing doors on the pods
     [pod.drawdoors() for pod in pods]
 
-
     internal_pod_check = ''
 
     internal_pods = {}
@@ -554,8 +549,6 @@ while run:
                     if checkcollided(pod.rightdoorpos[0],pod.rightdoorpos[1],x,y):
                         pod.rightdoorstate = not pod.rightdoorstate
 
-
-
             if pod.connecting_rooms[index1] not in ['outside','empty']:
                 if pod.leftdoorstate == True and pod.rightdoorstate == False and pod.topdoorstate == False and pod.bottomdoorstate == False and pods[index(pod.connecting_rooms[index1])].leftdoorstate == False and pods[index(pod.connecting_rooms[index1])].topdoorstate == False and pods[index(pod.connecting_rooms[index1])].bottomdoorstate == False:
                     pod.opendoor('left')
@@ -576,7 +569,6 @@ while run:
                     pod.opendoor('right')
                 else:
                     pod.closedoor('right')
-
 
         if pod.orientation == 'top' or pod.pod_type == 'A':
             if pod.pod_type == 'A':
@@ -614,11 +606,9 @@ while run:
                  else:
                      pod.closedoor('bottom')
 
-
     '''for pod in pods:
         if pod.id in [1,2]:
             print(pod.name,pod.leftdoorstate,pod.rightdoorstate,pod.topdoorstate,pod.bottomdoorstate)'''
-
 
     # Draws the astronauts to the screen
     [astronaut.draw() for astronaut in astronauts]
