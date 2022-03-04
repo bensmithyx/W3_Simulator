@@ -9,7 +9,7 @@ class Timer:
         self.yxis = yxis
 
     def display(self):
-        screen.blit(font.render(self.text, True, (0, 0, 0)), (1500, self.yxis))
+        screen.blit(font.render(self.name+self.text, True, (0, 0, 0)), (1500, self.yxis))
 
 
 class Emergency:

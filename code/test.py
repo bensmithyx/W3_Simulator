@@ -517,6 +517,8 @@ while run:
     keys = pygame.key.get_pressed()
     draw_background()
 
+
+    lockdown('Living Quarters')
     # x,y cords of selected astronaut
     x, y = astronauts[active_astronaut].rect.centerx, astronauts[active_astronaut].rect.centery
 

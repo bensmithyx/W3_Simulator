@@ -4,10 +4,11 @@ class Doors():
     def __init__(self, pod_names):
         self.pod_names = pod_names
         self.lockdown = False
-
+    # Draws doors to the screen
     def draw(self, pivot, angle, doorcolour):
         self.pivot = pivot
         self.angle = angle
+        # Colour of the door
         self.doorcolour = doorcolour
         if self.lockdown:
             self.doorcolour = closed
@@ -71,6 +72,7 @@ class Pod():
             else:
                 self.radius = 100/scale
                 self.pod_type = 'B'
+            # Allows us to know where the doors in each pod lead to
             self.topdoor_pod = connecting_rooms[0]
             self.bottomdoor_pod = connecting_rooms[1]
             self.leftdoor_pod = connecting_rooms[0]
@@ -477,7 +479,7 @@ pods = [
         Pod(13,'airlock4',['Emergency Quarters','outside'],['fakeairlock','airlock'],[],3,'bottom','top'),
         Pod(14,'airlock5',['outside','Storage (External)'],['airlock','fakeairlock'],[],8,'top','top'),
         Pod(15,'airlock5',['Life Support/Power Plant/Recycling','outside'],['fakeairlock','airlock'],[],4,'bottom','top')
-        #Pod(11,'New Pod',['Living Quarters','outside'],['normal','airlock'],[],6,'center','left')
+        #Pod(16,'New Pod',['Living Quarters','outside'],['normal','airlock'],[],1,'center','left')
         ]
 
 pygame.init()
@@ -516,7 +518,7 @@ while run:
     clock.tick(FPS)
     keys = pygame.key.get_pressed()
     draw_background()
-
+    #lockdown('Living Quarters')
     # x,y cords of selected astronaut
     x, y = astronauts[active_astronaut].rect.centerx, astronauts[active_astronaut].rect.centery
 
@@ -611,6 +613,10 @@ while run:
 
     # Draws the astronauts to the screen
     [astronaut.draw() for astronaut in astronauts]
+
+    '''[['A'], [3]]
+    [4]
+    [['fire','b'],['wait','30']]'''
 
     # Updating selected astronauts movement
     astronauts[active_astronaut].update()
