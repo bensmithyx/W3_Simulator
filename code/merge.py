@@ -746,6 +746,7 @@ active_astronaut = 0
 run = True
 counter = 0
 
+font = pygame.font.SysFont('Consolas', 30)
 fireparticles = []
 fireparticles1 = []
 bioparticles = []
