@@ -467,7 +467,7 @@ def save_scenario():
 
 def run_scenario():
     text = state.speed + "\n" + str(state.num_astros_arr) + "\n" + str(state.timeline)
-    filename = "scenario.txt"
+    filename = ".scenario.txt"
     with open(filename, 'w') as file:
         file.write(text)
         file.close()

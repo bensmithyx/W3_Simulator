@@ -1,13 +1,14 @@
-import pygame, os
+import pygame, os, scenario_gui
 
 class Doors():
     def __init__(self, pod_names):
         self.pod_names = pod_names
         self.lockdown = False
-
+    # Draws doors to the screen
     def draw(self, pivot, angle, doorcolour):
         self.pivot = pivot
         self.angle = angle
+        # Colour of the door
         self.doorcolour = doorcolour
         if self.lockdown:
             self.doorcolour = closed
@@ -71,6 +72,7 @@ class Pod():
             else:
                 self.radius = 100/scale
                 self.pod_type = 'B'
+            # Allows us to know where the doors in each pod lead to
             self.topdoor_pod = connecting_rooms[0]
             self.bottomdoor_pod = connecting_rooms[1]
             self.leftdoor_pod = connecting_rooms[0]
@@ -230,7 +232,7 @@ class Astronaut(pygame.sprite.Sprite):
     def __init__(self, id, x, y, scale):
         pygame.sprite.Sprite.__init__(self)
         self.alive = True
-        self.speed = 2
+        self.speed = 2*int(scenario_gui.state.speed[0])
         self.direction = 1
         self.health = 100
         self.flip = False
@@ -446,9 +448,9 @@ def draw_background():
     screen.fill((255,153,102))
     # Adding background image to screen
     screen.blit(surface,(0,0))
-
+print(scenario_gui.state.speed,scenario_gui.state.num_astros_arr,scenario_gui.state.timeline)
 scale = 1.25
-multiplier = 1
+multiplier = 2
 # Colours
 lightgrey = (170,170,170)
 grey = (144,144,144)
@@ -477,7 +479,7 @@ pods = [
         Pod(13,'airlock4',['Emergency Quarters','outside'],['fakeairlock','airlock'],[],3,'bottom','top'),
         Pod(14,'airlock5',['outside','Storage (External)'],['airlock','fakeairlock'],[],8,'top','top'),
         Pod(15,'airlock5',['Life Support/Power Plant/Recycling','outside'],['fakeairlock','airlock'],[],4,'bottom','top')
-        #Pod(11,'New Pod',['Living Quarters','outside'],['normal','airlock'],[],6,'center','left')
+        #Pod(16,'New Pod',['Living Quarters','outside'],['normal','airlock'],[],1,'center','left')
         ]
 
 pygame.init()
@@ -516,9 +518,7 @@ while run:
     clock.tick(FPS)
     keys = pygame.key.get_pressed()
     draw_background()
-
-
-    lockdown('Living Quarters')
+    #lockdown('Living Quarters')
     # x,y cords of selected astronaut
     x, y = astronauts[active_astronaut].rect.centerx, astronauts[active_astronaut].rect.centery
 
@@ -534,7 +534,7 @@ while run:
         if len(pod.internal_pod):
             internal_pods[pod.name]=pod.internal_pod[0]
 
-    if counter % (4/multiplier) == 0:
+    if counter % (2) == 0:
         for pod in pods:
             if pod.orientation == 'left' or pod.pod_type == 'A':
                 if pod.pod_type == 'A':
@@ -613,6 +613,10 @@ while run:
 
     # Draws the astronauts to the screen
     [astronaut.draw() for astronaut in astronauts]
+
+    '''[['A'], [3]]
+    [4]
+    [['fire','b'],['wait','30']]'''
 
     # Updating selected astronauts movement
     astronauts[active_astronaut].update()
