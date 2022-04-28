@@ -1,14 +1,216 @@
-import pygame, os, scenario_gui
+from typing import Tuple
+
+import pygame, os, sys, random, time, scenario_gui
+from pygame.locals import *
+
+class Timer:
+    def __init__(self, name, time, text, yxis):
+        self.name = name
+        self.time = time
+        self.timetext = ''
+        self.text = text
+        self.yxis = yxis
+
+    def display(self):
+        screen.blit(font.render(self.text+self.timetext, True, (0, 0, 0)), (1500, self.yxis))
+
+class Emergency:
+    def __init__(self, pods, fire, air_quality, radiation, bio_hazard):
+        self.fire = fire
+        self.fire = 0                 # TURN ON FIRE EVENT #####IMPORTANT###
+        self.air_quality = air_quality
+        self.radiation = radiation
+        self.bio_hazard = bio_hazard
+        self.fire_supress = 0
+        self.bio_supress = 0
+        self.radiation_supress = 0
+        self.ealarm = 0
+        self.bio_hazard = 0
+        self.bioalarm = 0
+        self.radiation_hazard = 0
+        self.radiationalarm = 0
+        self.airalarm = 0
+        self.air_quality_hazard = 1
+        self.air_quality_suppress = 0
+
+    def alarm(self, podname):
+        #alarm_sound = pygame.mixer.Sound('sound/e_alarm.wav')
+
+        if self.ealarm == 1:
+            for timer in clocks:
+                if timer.name == 'acms_20delay':
+                    if timer.time == 0:
+                        #alarm_sound.play()
+                        for pod in pods:
+                            if pod.name == podname:
+                                pod.colour = red
+                                lockdown(podname)
+
+    def biobasealarm(self, podname):
+        alarm_sound = pygame.mixer.Sound('sound/e_alarm.wav')
+
+        if self.bioalarm == 1:
+            for timer in clocks:
+                if timer.name == 'bio_time':
+                    if timer.time < 25:
+                        alarm_sound.play()
+                        for pod in pods:
+                            if pod.name == podname:
+                                pod.colour = red
+                                lockdown(podname)
+
+    def air_quality_alarm(self, podname):
+       # alarm_sound = pygame.mixer.Sound('sound/e_alarm.wav')
+
+        if self.airalarm == 1:
+            for timer in clocks:
+                if timer.name == 'air_time':
+                    if timer.time < 25:
+                       # alarm_sound.play()
+                        for pod in pods:
+                            if pod.name == podname:
+                                pod.colour = red
+                                lockdown(podname)
+
+    def radiationbasealarm(self, podname):
+       # alarm_sound = pygame.mixer.Sound('sound/e_alarm.wav')
+
+        if self.radiationalarm == 1:
+            for timer in clocks:
+                if timer.name == 'radiation_time':
+                    if timer.time < 25:
+                       # alarm_sound.play()
+                        for pod in pods:
+                            if pod.name == podname:
+                                pod.colour = red
+                                lockdown(podname)
+
+    def fire_event(self, podname):
+
+        if self.fire == 1:
+            for timer in clocks:
+                if timer.name == 'acms_20delay':
+                    self.ealarm = 1
+                    self.alarm(podname)
+                    if timer.time == 0:
+                        self.fire_supress = 1
+                        self.fire = 0
+                        self.ealarm = 0
+
+        if self.fire_supress == 1:
+            for timer in clocks:
+                if timer.name == 'fire':
+                    if timer.time < 5:
+                        self.fire_supress = 0
+                        for pod in pods:
+                            if pod.name == podname:
+                                pod.colour = lightgrey
+
+        for timer in clocks:
+            if timer.name == 'fire':
+                if timer.time == 0:
+                    for pod in pods:
+                        if pod.name == podname:
+                            unlockdown(podname)
+
+
+    def air_quality_event(self, podname):
+        if self.air_quality_hazard == 1:
+            for timer in clocks:
+                if timer.name == 'air_time':
+                    if timer.time < 15:
+                        self.airalarm = 1
+                        self.air_quality_alarm(podname)
+                        if timer.time < 10:
+                            self.air_quality_suppress = 1
+                            self.air_quality_hazard = 0
+                            self.airalarm = 0
+
+        if self.air_quality_suppress == 1:
+            for timer in clocks:
+                if timer.name == 'air_time':
+                    if timer.time < 5:
+                        self.air_quality_suppress = 0
+                        for pod in pods:
+                            if pod.name == podname:
+                                pod.colour = lightgrey
+
+        for timer in clocks:
+            if timer.name == 'air_time':
+                if timer.time == 0:
+                    for pod in pods:
+                        if pod.name == podname:
+                            unlockdown(podname)
+
+
+    def bio_hazard_event(self, podname):
+
+        if self.bio_hazard == 1:
+            for timer in clocks:
+                if timer.name == 'bio_time':
+                    if timer.time < 15:
+                        self.bioalarm = 1
+                        self.biobasealarm(podname)
+                        if timer.time < 10:
+                            self.bio_supress = 1
+                            self.bio_hazard = 0
+                            self.bioalarm = 0
+
+
+        if self.bio_supress == 1:
+            for timer in clocks:
+                if timer.name == 'bio_time':
+                    if timer.time < 5:
+                        self.bio_supress = 0
+                        self.bioalarm = 0
+                        for pod in pods:
+                            if pod.name == podname:
+                                pod.colour = lightgrey
+
+        for timer in clocks:
+            if timer.name == 'bio_time':
+                if timer.time == 0:
+                    for pod in pods:
+                        if pod.name == podname:
+                            unlockdown(podname)
+
+    def radiation_event(self, podname):
+        if self.radiation_hazard == 1:
+            for timer in clocks:
+                if timer.name == 'radiation_time':
+                    if timer.time < 15:
+                        self.radiationalarm = 1
+                        self.radiationbasealarm(podname)
+                        if timer.time < 10:
+                            self.radiation_supress = 1
+                            self.radiation_hazard = 0
+                            self.radiationalarm = 0
+
+        if self.radiation_supress == 1:
+            for timer in clocks:
+                if timer.name == 'radiation_time':
+                    if timer.time < 5:
+                        self.radiation_supress = 0
+                        for pod in pods:
+                            if pod.name == podname:
+                                pod.colour = lightgrey
+
+        for timer in clocks:
+            if timer.name == 'radiation_time':
+                if timer.time == 0:
+                    for pod in pods:
+                        if pod.name == podname:
+                            unlockdown(podname)
+
 
 class Doors():
     def __init__(self, pod_names):
         self.pod_names = pod_names
         self.lockdown = False
-    # Draws doors to the screen
+
     def draw(self, pivot, angle, doorcolour):
         self.pivot = pivot
         self.angle = angle
-        # Colour of the door
         self.doorcolour = doorcolour
         if self.lockdown:
             self.doorcolour = closed
@@ -72,7 +274,6 @@ class Pod():
             else:
                 self.radius = 100/scale
                 self.pod_type = 'B'
-            # Allows us to know where the doors in each pod lead to
             self.topdoor_pod = connecting_rooms[0]
             self.bottomdoor_pod = connecting_rooms[1]
             self.leftdoor_pod = connecting_rooms[0]
@@ -443,24 +644,172 @@ def lockdown(name):
         if name in pod.bottomdoor.pod_names:
             pod.bottomdoor.lockdown = True
 
+def unlockdown(name):
+    for pod in pods:
+        if name in pod.leftdoor.pod_names:
+            pod.leftdoor.lockdown = False
+        if name in pod.rightdoor.pod_names:
+            pod.rightdoor.lockdown = False
+        if name in pod.topdoor.pod_names:
+            pod.topdoor.lockdown = False
+        if name in pod.bottomdoor.pod_names:
+            pod.bottomdoor.lockdown = False
+
 def draw_background():
     # Fills the screen just in case image doesn't load
     screen.fill((255,153,102))
     # Adding background image to screen
     screen.blit(surface,(0,0))
+
+
+def circle_surf(radius, color):  # cloudy view
+    surf = pygame.Surface((radius * 2, radius * 2))
+    pygame.draw.circle(surf, color, (radius, radius), radius)
+    surf.set_colorkey((0, 0, 0))
+    return surf
+
+def fire(podname):
+
+    if fire1.fire == 1:
+
+        for fireparticle1 in fireparticles1:
+            fireparticle1[0][0] += fireparticle1[1][0]
+            fireparticle1[0][1] += fireparticle1[1][1]
+            fireparticle1[2] -= 0.2
+            fireparticle1[1][1] += 0.2
+            pygame.draw.circle(screen, (255, 0, 0), [int(fireparticle1[0][0]), int(fireparticle1[0][1])],
+                               # respsonble for colour
+                               int(fireparticle1[2]))
+            if fireparticle1[2] <= 0:
+                fireparticles1.remove(fireparticle1)
+
+
+def firesupress(podname):
+    if fire1.fire_supress == 1:
+
+        for fireparticle in fireparticles:
+            fireparticle[0][0] += fireparticle[1][0]
+            fireparticle[0][1] += fireparticle[1][1]
+            fireparticle[2] -= 0.2
+            fireparticle[1][1] += 0.2
+
+            radius = fireparticle[2] * 2
+            screen.blit(circle_surf(radius, (255, 255, 255)),
+                               (int(fireparticle[0][0] - radius), int(fireparticle[0][1] - radius)),
+                               special_flags=BLEND_RGB_ADD)  # cloudy view
+            if fireparticle[2] <= 0:
+                fireparticles.remove(fireparticle)
+
+
+def bio(podname):
+    if bio1.bio_hazard == 1:
+
+        for bioparticle1 in bioparticles1:
+            bioparticle1[0][0] += bioparticle1[1][0]
+            bioparticle1[0][1] += bioparticle1[1][1]
+            bioparticle1[2] -= 0.2
+            bioparticle1[1][1] += 0.2
+            pygame.draw.circle(screen, (0, 255, 0), [int(bioparticle1[0][0]), int(bioparticle1[0][1])],
+                               # respsonble for colour
+                               int(bioparticle1[2]))
+            if bioparticle1[2] <= 0:
+                bioparticles1.remove(bioparticle1)
+
+
+def biosupress(podname):
+    if bio1.bio_supress == 1:
+
+        for bioparticle in bioparticles:
+            bioparticle[0][0] += bioparticle[1][0]
+            bioparticle[0][1] += bioparticle[1][1]
+            bioparticle[2] -= 0.2
+            bioparticle[1][1] += 0.2
+
+            radius = bioparticle[2] * 2
+            screen.blit(circle_surf(radius, (255, 255, 255)),
+                               (int(bioparticle[0][0] - radius), int(bioparticle[0][1] - radius)),
+                               special_flags=BLEND_RGB_ADD)  # cloudy view
+            if bioparticle[2] <= 0:
+                bioparticles.remove(bioparticle)
+
+def radiation(podname):
+    if radiation1.radiation_hazard == 1:
+
+        for radiationparticle1 in radiationparticles1:
+            radiationparticle1[0][0] += radiationparticle1[1][0]
+            radiationparticle1[0][1] += radiationparticle1[1][1]
+            radiationparticle1[2] -= 0.2
+            radiationparticle1[1][1] += 0.2
+            pygame.draw.circle(screen, (128, 0, 128), [int(radiationparticle1[0][0]), int(radiationparticle1[0][1])],
+                               # respsonble for colour
+                               int(radiationparticle1[2]))
+            if radiationparticle1[2] <= 0:
+                radiationparticles1.remove(radiationparticle1)
+
+
+def radiationsupress(podname):
+    if radiation1.radiation_supress == 1:
+
+        for radiationparticle in radiationparticles:
+            radiationparticle[0][0] += radiationparticle[1][0]
+            radiationparticle[0][1] += radiationparticle[1][1]
+            radiationparticle[2] -= 0.2
+            radiationparticle[1][1] += 0.2
+
+            radius = radiationparticle[2] * 2
+            screen.blit(circle_surf(radius, (255, 255, 255)),
+                               (int(radiationparticle[0][0] - radius), int(radiationparticle[0][1] - radius)),
+                               special_flags=BLEND_RGB_ADD)  # cloudy view
+            if radiationparticle[2] <= 0:
+                radiationparticles.remove(radiationparticle)
+
+def air_quality(podname):
+    if airquality1.air_quality_hazard == 1:
+
+        for airqualityparticle1 in airqualityparticles1:
+            airqualityparticle1[0][0] += airqualityparticle1[1][0]
+            airqualityparticle1[0][1] += airqualityparticle1[1][1]
+            airqualityparticle1[2] -= 0.2
+            airqualityparticle1[1][1] += 0.2
+            pygame.draw.circle(screen, (0, 64, 255), [int(airqualityparticle1[0][0]), int(airqualityparticle1[0][1])],
+                               # respsonble for colour
+                               int(airqualityparticle1[2]))
+            if airqualityparticle1[2] <= 0:
+                airqualityparticles1.remove(airqualityparticle1)
+
+
+def air_quality_suppress_f(podname):
+    if airquality1.air_quality_suppress == 1:
+
+        for airqualityparticle in airqualityparticles:
+            airqualityparticle[0][0] += airqualityparticle[1][0]
+            airqualityparticle[0][1] += airqualityparticle[1][1]
+            airqualityparticle[2] -= 0.2
+            airqualityparticle[1][1] += 0.2
+
+            radius = airqualityparticle[2] * 2
+            screen.blit(circle_surf(radius, (255, 255, 255)),
+                               (int(airqualityparticle[0][0] - radius), int(airqualityparticle[0][1] - radius)),
+                               special_flags=BLEND_RGB_ADD)  # cloudy view
+            if airqualityparticle[2] <= 0:
+                airqualityparticles.remove(airqualityparticle)
+
+
+
 print(scenario_gui.state.speed,scenario_gui.state.num_astros_arr,scenario_gui.state.timeline)
 scale = 1.25
-multiplier = 2
+multiplier = 1
 # Colours
-lightgrey = (170,170,170)
-grey = (144,144,144)
+lightgrey = (170, 170, 170)
+grey = (144, 144, 144)
 colour = grey
-doorcolour = (220,228,228)
-open = (0,204,0)
-closed = (153,0,0)
-black = (0,0,0)
-lightblue = (0,153,255)
+doorcolour = (220, 228, 228)
+open = (0, 204, 0)
+closed = (153, 0, 0)
+black = (0, 0, 0)
+lightblue = (0, 153, 255)
 podcolour = lightgrey
+red = (255, 0, 0)
 # List of all the pods if a new one is to be added it can be done here
 pods = [
         Pod(1,'Living Quarters',['airlock1','outside','Connecting Corridor','outside'],['fakeairlock','empty','normal','empty'],[],(550,450),'',''),
@@ -479,7 +828,7 @@ pods = [
         Pod(13,'airlock4',['Emergency Quarters','outside'],['fakeairlock','airlock'],[],3,'bottom','top'),
         Pod(14,'airlock5',['outside','Storage (External)'],['airlock','fakeairlock'],[],8,'top','top'),
         Pod(15,'airlock5',['Life Support/Power Plant/Recycling','outside'],['fakeairlock','airlock'],[],4,'bottom','top')
-        #Pod(16,'New Pod',['Living Quarters','outside'],['normal','airlock'],[],1,'center','left')
+        #Pod(11,'New Pod',['Living Quarters','outside'],['normal','airlock'],[],6,'center','left')
         ]
 
 pygame.init()
@@ -496,6 +845,20 @@ pygame.display.set_icon(icon)
 # Making Astronauts
 astronauts = [Astronaut(0,600,450,2/scale),Astronaut(1,820,450,2/scale),Astronaut(2,1350,450,2/scale),Astronaut(3,1100,445,2/scale)]
 
+fire1 = Emergency(3, 1, 1, False, False)      #preset emergency allow for pod to go red
+fire2 = Emergency(3, False, False, False, False)  #preset emergency allow for pod to go red
+fire3 = Emergency(1, True, True, True, True)
+
+bio1 = Emergency(5, 0, False, False, True)
+
+radiation1 = Emergency(1, 1, False, False, True)
+
+airquality1 = Emergency(1, 1, False, False, True)
+
+clocks = [Timer('acms_20delay', 10, 'delay', 50), Timer('doors', 5, 'doors', 100), Timer('fire', 25, 'fire', 150),
+          Timer('bio_time', 20, 'bio', 200), Timer('radiation_time', 20, 'radiation', 250), Timer('air_time', 20, 'air', 300)]
+
+
 # Background Image
 surface = pygame.image.load('images/surface.png')
 surface = pygame.transform.scale(surface=surface, size=(info.current_w, info.current_h))
@@ -511,14 +874,28 @@ kill = False
 active_astronaut = 0
 run = True
 counter = 0
+
+pygame.time.set_timer(pygame.USEREVENT, 1000)
+font = pygame.font.SysFont('Consolas', 30)
+fireparticles = []
+fireparticles1 = []
+bioparticles = []
+bioparticles1 = []
+radiationparticles = []
+radiationparticles1 = []
+airqualityparticles = []
+airqualityparticles1 = []
+
 while run:
+
+
     counter +=1
     #for pod in pods:
-    #print(f'\nPod name = {pod.name}\nLeft state = {bcolors.WARNING if pod.leftdoorstate==True else bcolors.ENDC}{pod.leftdoorstate}{bcolors.ENDC}\nRight state = {bcolors.WARNING if pod.rightdoorstate==True else bcolors.ENDC}{pod.rightdoorstate}{bcolors.ENDC}\nTop state = {bcolors.WARNING if pod.topdoorstate==True else bcolors.ENDC}{pod.topdoorstate}{bcolors.ENDC}\nBottom State = {bcolors.WARNING if pod.bottomdoorstate==True else bcolors.ENDC}{pod.bottomdoorstate}{bcolors.ENDC}')
+    #    print(f'\nPod name = {pod.name}\nLeft state = {bcolors.WARNING if pod.leftdoorstate==True else bcolors.ENDC}{pod.leftdoorstate}{bcolors.ENDC}\nRight state = {bcolors.WARNING if pod.rightdoorstate==True else bcolors.ENDC}{pod.rightdoorstate}{bcolors.ENDC}\nTop state = {bcolors.WARNING if pod.topdoorstate==True else bcolors.ENDC}{pod.topdoorstate}{bcolors.ENDC}\nBottom State = {bcolors.WARNING if pod.bottomdoorstate==True else bcolors.ENDC}{pod.bottomdoorstate}{bcolors.ENDC}')
     clock.tick(FPS)
     keys = pygame.key.get_pressed()
     draw_background()
-    #lockdown('Living Quarters')
+
     # x,y cords of selected astronaut
     x, y = astronauts[active_astronaut].rect.centerx, astronauts[active_astronaut].rect.centery
 
@@ -529,12 +906,108 @@ while run:
 
     internal_pod_check = ''
 
+     # fire emergency
+    firesupress('Living Quarters') #fire supress dont touch change location of supress below
+    fire('Living Quarters') #display red fire
+    fire1.fire_event('Living Quarters')# fire event
+
+    # fire
+    for pod in pods:
+        if pod.name == "Living Quarters":
+            mx, my = pod.pos[0], pod.pos[1]
+            break
+    fireparticles1.append([[mx, my], [random.randint(0, 20) / 10 - 1, -2], random.randint(4, 6)])
+    # add extra fire
+
+    # fire suppresant
+    for pod in pods:
+        if pod.name == "Living Quarters":
+            mx, my = pod.pos[0], pod.pos[1]
+            break
+    fireparticles.append([[mx, my], [random.randint(0, 20) / 10 - 1, -2], random.randint(4, 6)])
+
+    fire2.fire_event('Engineering Workshop/Mining Operations/Storage')
+    fire('Engineering Workshop/Mining Operations/Storage')
+    firesupress('Engineering Workshop/Mining Operations/Storage')
+
+    # fire
+    for pod in pods:
+        if pod.name == "Engineering Workshop/Mining Operations/Storage":
+            mx, my = pod.pos[0], pod.pos[1]
+            break
+    fireparticles1.append([[mx, my], [random.randint(0, 20) / 10 - 1, -2], random.randint(4, 6)])
+    # add extra fire
+
+    # fire suppresant
+    for pod in pods:
+        if pod.name == "Engineering Workshop/Mining Operations/Storage":
+            mx, my = pod.pos[0], pod.pos[1]
+            break
+    fireparticles.append([[mx, my], [random.randint(0, 20) / 10 - 1, -2], random.randint(4, 6)])
+
+    biosupress('Emergency Quarters')  # fire supress dont touch change location of supress below
+    bio('Emergency Quarters')  # display red fire
+    bio1.bio_hazard_event('Emergency Quarters')  # fire event
+
+    # bio
+    for pod in pods:
+        if pod.name == "Emergency Quarters":
+            mx, my = pod.pos[0], pod.pos[1]
+            break
+    bioparticles1.append([[mx, my], [random.randint(0, 20) / 10 - 1, -2], random.randint(4, 6)])
+    # add extra fire
+
+    # bio suppresant
+    for pod in pods:
+        if pod.name == "Emergency Quarters":
+            mx, my = pod.pos[0], pod.pos[1]
+            break
+    bioparticles.append([[mx, my], [random.randint(0, 20) / 10 - 1, -2], random.randint(4, 6)])
+
+    radiation('Living Quarters')  # fire supress dont touch change location of supress below
+    radiationsupress('Living Quarters')  # display red fire
+    radiation1.radiation_event('Living Quarters')  # fire event
+
+    # fire
+    for pod in pods:
+        if pod.name == "Living Quarters":
+            mx, my = pod.pos[0], pod.pos[1]
+            break
+    radiationparticles1.append([[mx, my], [random.randint(0, 20) / 10 - 1, -2], random.randint(4, 6)])
+    # add extra fire
+
+    # fire suppresant
+    for pod in pods:
+        if pod.name == "Living Quarters":
+            mx, my = pod.pos[0], pod.pos[1]
+            break
+    radiationparticles.append([[mx, my], [random.randint(0, 20) / 10 - 1, -2], random.randint(4, 6)])
+
+    air_quality('Living Quarters')  # fire supress dont touch change location of supress below
+    air_quality_suppress_f('Living Quarters')  # display red fire
+    airquality1.air_quality_event('Living Quarters')  # fire event
+
+    # fire
+    for pod in pods:
+        if pod.name == "Living Quarters":
+            mx, my = pod.pos[0], pod.pos[1]
+            break
+    airqualityparticles1.append([[mx, my], [random.randint(0, 20) / 10 - 1, -2], random.randint(4, 6)])
+    # add extra fire
+
+    # fire suppresant
+    for pod in pods:
+        if pod.name == "Living Quarters":
+            mx, my = pod.pos[0], pod.pos[1]
+            break
+    airqualityparticles.append([[mx, my], [random.randint(0, 20) / 10 - 1, -2], random.randint(4, 6)])
+
     internal_pods = {}
     for pod in pods:
         if len(pod.internal_pod):
             internal_pods[pod.name]=pod.internal_pod[0]
 
-    if counter % (2) == 0:
+    if counter % (4/multiplier) == 0:
         for pod in pods:
             if pod.orientation == 'left' or pod.pod_type == 'A':
                 if pod.pod_type == 'A':
@@ -614,10 +1087,6 @@ while run:
     # Draws the astronauts to the screen
     [astronaut.draw() for astronaut in astronauts]
 
-    '''[['A'], [3]]
-    [4]
-    [['fire','b'],['wait','30']]'''
-
     # Updating selected astronauts movement
     astronauts[active_astronaut].update()
     astronauts[active_astronaut].draw()
@@ -641,6 +1110,10 @@ while run:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
+        if event.type == pygame.USEREVENT:
+            for timer in clocks:
+                timer.time -= 1
+                timer.timetext = str(timer.time).rjust(3) if timer.time > 0 else '0'.rjust(3)
         # Keyboard keypresses
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_a:
@@ -678,5 +1151,7 @@ while run:
                 if astronaut.rect.collidepoint(mouse_position):
                     # Setting which astronaut is to be moved using their id
                     active_astronaut = astronaut.id
+    for timer in clocks:
+        timer.display()
     pygame.display.update()
 pygame.quit()
