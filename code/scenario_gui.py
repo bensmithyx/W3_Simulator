@@ -330,7 +330,7 @@ def init_timeline_frame(master):
     frame['padding'] = 5
     frame['relief'] = "sunken"
 
-    for entry in state.timeline:
+    for index, entry in enumerate(state.timeline, start=0):
         if entry[0] == "Fire":
             colour = "orange"
         elif entry[0] == "Biohazard":
@@ -352,12 +352,18 @@ def init_timeline_frame(master):
 
         disaster_lbl = Label(frame, text=text, width=15, height=15, bg=colour)
 
-        # !!! PROBLEM CODE IS HERE !!!
-        remove_btn = Button(disaster_lbl, text="X", bg="red",
-                            command=lambda: [state.timeline.remove(entry), MainWindow.reload_main()])
+        btns = []
 
-        disaster_lbl.pack(side=LEFT, anchor=E, padx=5, pady=5)
-        remove_btn.place(relx=0.95, rely=0.05, relwidth=0.2, relheight=0.2, anchor="ne")
+        class remove_btn:
+            def __init__(self, index, label):
+                self.label = label
+                self.index = index
+                self.btn = Button(self.label, text="X", bg="red",command=lambda: [state.timeline.pop(self.index), MainWindow.reload_main()])
+                self.label.pack(side=LEFT, anchor=E, padx=5, pady=5)
+                self.btn.place(relx=0.95, rely=0.05, relwidth=0.2, relheight=0.2, anchor="ne")
+
+        # !!! PROBLEM CODE IS HERE !!!
+        btns.append(remove_btn(index, disaster_lbl))
 
     return frame
 
