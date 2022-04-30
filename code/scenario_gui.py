@@ -471,7 +471,7 @@ def run_scenario():
     with open(filename, 'w') as file:
         file.write(text)
         file.close()
-    MainWindow.root.quit()
+    MainWindow.root.destroy()
 
 
 def go_back():
