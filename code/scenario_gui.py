@@ -1,6 +1,5 @@
 from tkinter import *
 from tkinter import ttk
-
 '''
 Got issues with removing the items in the timeline
 Whatever I do it always just removes the last one that was entered
@@ -37,7 +36,7 @@ class MainWindow:
         self.canvas = Canvas()
 
     def render_main(self):
-        self.canvas = Canvas(self.root, bg="grey")
+        self.canvas = Canvas(self.root, bg="grey",highlightthickness=0)
         self.entries = []
 
         # Create frames and then place them on the canvas
@@ -72,7 +71,7 @@ class MainWindow:
         self.canvas.place(relx=0.5, rely=0.5, relwidth=0.95, relheight=0.95, anchor="center")
 
     def render_astro_config(self):
-        self.canvas = Canvas(self.root, bg="grey")
+        self.canvas = Canvas(self.root, bg="grey", highlightthickness=0)
         # creates the frame with both the save and cancel buttons on them
         # pass in context so save knows where to store the information
         save_cancel_frame = init_save_cancel_frame(self.canvas, "astros")
@@ -87,7 +86,7 @@ class MainWindow:
         self.canvas.place(relx=0.5, rely=0.5, relwidth=0.95, relheight=0.95, anchor="center")
 
     def render_disaster_config(self):
-        self.canvas = Canvas(self.root, bg="grey")
+        self.canvas = Canvas(self.root, bg="grey", highlightthickness=0)
         # creates the frame with both the save and cancel buttons on them
         # pass in context so save knows where to store the information
 
@@ -101,7 +100,7 @@ class MainWindow:
 
     def render_add_disaster(self, disaster):
         self.destroy_canvas()
-        self.canvas = Canvas(self.root, bg="grey")
+        self.canvas = Canvas(self.root, bg="grey", highlightthickness=0)
         # creates the frame with both the save and cancel buttons on them
         # pass in context so save knows where to store the information
 
@@ -122,7 +121,7 @@ class MainWindow:
 
     def render_add_time(self):
         self.destroy_canvas()
-        self.canvas = Canvas(self.root, bg="grey")
+        self.canvas = Canvas(self.root, bg="grey", highlightthickness=0)
         # creates the frame with both the save and cancel buttons on them
 
         input_frame = init_input_frame(self.canvas, "Add how long to wait for, in seconds")
@@ -135,7 +134,7 @@ class MainWindow:
 
     def render_load_scenario(self):
         self.destroy_canvas()
-        self.canvas = Canvas(self.root, bg="grey")
+        self.canvas = Canvas(self.root, bg="grey", highlightthickness=0)
         # creates the frame with both the save and cancel buttons on them
 
         input_frame = init_input_frame(self.canvas, "Enter the filename of the scenario you wish to load")
@@ -156,9 +155,9 @@ class MainWindow:
 
 def init_disaster_button_frame(master):
     # Creates a frame with the parent as the window
-    frame = ttk.Frame(master)
+    frame = ttk.Frame(master, borderwidth=0)
     # Styling for the frame
-    frame['padding'] = 5
+    frame['padding'] = 0
     frame['relief'] = "sunken"
 
     Grid.rowconfigure(frame, 0, weight=1)
@@ -187,17 +186,17 @@ def init_disaster_button_frame(master):
 
 def init_add_time_frame(master):
     # Creates a frame with the parent as the window
-    frame = ttk.Frame(master)
+    frame = ttk.Frame(master, borderwidth=0)
     # Styling for the frame
-    frame['padding'] = 5
+    frame['padding'] = 0
     frame['relief'] = "sunken"
 
 
 def init_input_frame(master, text):
     # Creates a frame with the parent as the window
-    frame = ttk.Frame(master)
+    frame = ttk.Frame(master, borderwidth=0)
     # Styling for the frame
-    frame['padding'] = 5
+    frame['padding'] = 0
     frame['relief'] = "sunken"
 
     label = Label(frame, text=text, font=20)
@@ -212,9 +211,9 @@ def init_input_frame(master, text):
 
 def init_go_back_frame(master):
     # Creates a frame with the parent as the window
-    frame = ttk.Frame(master)
+    frame = ttk.Frame(master, borderwidth=0)
     # Styling for the frame
-    frame['padding'] = 5
+    frame['padding'] = 0
     frame['relief'] = "sunken"
 
     cancel_btn = Button(frame, text="Go back", height=20, width=30, command=go_back, bg="red")
@@ -225,9 +224,9 @@ def init_go_back_frame(master):
 
 def init_save_cancel_frame(master, context):
     # Creates a frame with the parent as the window
-    frame = ttk.Frame(master)
+    frame = ttk.Frame(master, borderwidth=0)
     # Styling for the frame
-    frame['padding'] = 5
+    frame['padding'] = 0
     frame['relief'] = "sunken"
 
     save_btn = Button(frame, text="SAVE", height=20, width=30, command=lambda: save(context), bg="green")
@@ -241,9 +240,9 @@ def init_save_cancel_frame(master, context):
 
 def init_load_frame(master):
     # Creates a frame with the parent as the window
-    frame = ttk.Frame(master)
+    frame = ttk.Frame(master, borderwidth=0)
     # Styling for the frame
-    frame['padding'] = 5
+    frame['padding'] = 0
     frame['relief'] = "sunken"
 
     # Create a label with the frame as the parent and then pack to the top
@@ -261,9 +260,9 @@ def init_load_frame(master):
 
 def init_astro_config_frame(master):
     # Creates a frame with the parent as the window
-    frame = ttk.Frame(master)
+    frame = ttk.Frame(master, borderwidth=0)
     # Styling for the frame
-    frame['padding'] = 5
+    frame['padding'] = 0
     frame['relief'] = "sunken"
 
     text_astro_config = "Configure Astronaut Starting Position"
@@ -275,9 +274,9 @@ def init_astro_config_frame(master):
 
 def init_astro_view_frame(master):
     # Creates a frame with the parent as the window
-    frame = ttk.Frame(master)
+    frame = ttk.Frame(master, borderwidth=0)
     # Styling for the frame
-    frame['padding'] = 5
+    frame['padding'] = 0
     frame['relief'] = "sunken"
 
     pod_name_arr = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "k"]
@@ -293,9 +292,9 @@ def init_astro_view_frame(master):
 
 def init_speed_frame(master):
     # Creates a frame with the parent as the window
-    frame = ttk.Frame(master)
+    frame = ttk.Frame(master, borderwidth=0)
     # Styling for the frame
-    frame['padding'] = 5
+    frame['padding'] = 0
     frame['relief'] = "sunken"
 
     # Need to program logic so when the button is clicked it will cycle through set speeds
@@ -308,9 +307,9 @@ def init_speed_frame(master):
 
 def init_disaster_time_frame(master):
     # Creates a frame with the parent as the window
-    frame = ttk.Frame(master)
+    frame = ttk.Frame(master, borderwidth=0)
     # Styling for the frame
-    frame['padding'] = 5
+    frame['padding'] = 0
     frame['relief'] = "sunken"
 
     text_disaster = "Add a Disaster"
@@ -325,9 +324,9 @@ def init_disaster_time_frame(master):
 
 def init_timeline_frame(master):
     # Creates a frame with the parent as the window
-    frame = ttk.Frame(master)
+    frame = ttk.Frame(master, borderwidth=0)
     # Styling for the frame
-    frame['padding'] = 5
+    frame['padding'] = 0
     frame['relief'] = "sunken"
 
     for index, entry in enumerate(state.timeline, start=0):
@@ -371,9 +370,9 @@ def init_timeline_frame(master):
 def init_save_frame(master):
     MainWindow.entries = []
     # Creates a frame with the parent as the window
-    frame = ttk.Frame(master)
+    frame = ttk.Frame(master, borderwidth=0)
     # Styling for the frame
-    frame['padding'] = 5
+    frame['padding'] = 0
     frame['relief'] = "sunken"
 
     text_save = "Save Scenario as: "
@@ -389,9 +388,9 @@ def init_save_frame(master):
 
 def init_save_button_frame(master):
     # Creates a frame with the parent as the window
-    frame = ttk.Frame(master)
+    frame = ttk.Frame(master, borderwidth=0)
     # Styling for the frame
-    frame['padding'] = 5
+    frame['padding'] = 0
     frame['relief'] = "sunken"
 
     text_button_save = "SAVE"
@@ -403,12 +402,12 @@ def init_save_button_frame(master):
 
 def init_run_frame(master):
     # Creates a frame with the parent as the window
-    frame = ttk.Frame(master)
+    frame = ttk.Frame(master, borderwidth=-30)
     # Styling for the frame
-    frame['padding'] = 5
-    frame['relief'] = "sunken"
+    #frame['padding'] = 0
+    #frame['relief'] = "solid"
 
-    run_btn = Button(frame, text="RUN", height=15, width=15, command=run_scenario, bg="green")
+    run_btn = Button(frame, text="RUN", height=15, width=15, command=run_scenario, bg="green", borderwidth=0)
     run_btn.pack(side=TOP, anchor=N, fill=BOTH)
 
     return frame

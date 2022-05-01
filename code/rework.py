@@ -72,7 +72,11 @@ class Emergency:
                         timer.state = True
                         for pod in pods:
                             if pod.name == self.location:
-                                pod.colour = self.event_colours[self.type]
+
+                                if timer.time%2 == 0:
+                                    pod.colour = self.event_colours[self.type]
+                                else:
+                                    pod.colour = lightgrey
                                 # Alarm (some dont have alarms)
                                 #alarm_sound.play()
                 elif timer.time < 0:
