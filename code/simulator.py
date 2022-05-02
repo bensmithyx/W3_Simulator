@@ -1,14 +1,102 @@
-import pygame, os, scenario_gui
+from typing import Tuple
+import pygame, os, sys, random, time, scenario_gui
+from pygame.locals import *
+import numpy as np
+
+class Timer:
+    def __init__(self, name, time, text, yxis, state):
+        self.starttime = time
+        self.name = name
+        self.time = time
+        self.timetext = ''
+        self.text = text
+        self.yxis = yxis
+        self.state = state
+    # Displays timers to the GUI
+    def display(self):
+        screen.blit(font.render(self.text+self.timetext, True, (0, 0, 0)), (1500, self.yxis))
+    # Resets timers to original time
+    def reset(self):
+        self.time = self.starttime
+
+class Emergency:
+    def __init__(self, type, location):
+        self.type = type
+        self.location = location
+        self.event_colours = {'fire':orange,'bio':yellow,'airquality':blue,'radiation':green,'airpressure':red}
+        # times are in the order delay,time to fix event
+        self.event_times = {'fire':[20,5],'bio':[0,5],'airquality':[20,5],'radiation':[20,5],'airpressure':[20,5]}
+
+    def circle_surf(self, radius, color):  # cloudy view
+        surf = pygame.Surface((radius * 2, radius * 2))
+        pygame.draw.circle(surf, color, (radius, radius), radius)
+        surf.set_colorkey((0, 0, 0))
+        return surf
+
+    def start_event(self):
+        for pod in pods:
+            if pod.name == self.location:
+                mx, my = pod.pos[0], pod.pos[1]
+                break
+        eventparticles.append([[mx, my], [random.randint(0, 20) / 10 - 1, -2], random.randint(4, 6)])
+
+        # Event
+        for timer in clocks:
+            if timer.name == 'acms_20delay':
+                if timer.time == 0:
+                    # Doors lock
+                    lockdown(self.location)
+
+            # Surpress
+            if timer.name == self.type:
+                if timer.time > 0:
+                    if timer.time < self.event_times[self.type][1]:
+                        pixel_colour = (255, 255, 255)
+                        eventparticles.append([[mx, my], [random.randint(0, 20) / 10 - 1, -2], random.randint(4, 6)])
+                        eventparticles.append([[mx, my+100], [random.randint(0, 20) / 10 - 1, -2], random.randint(4, 6)])
+                        eventparticles.append([[mx, my-100], [random.randint(0, 20) / 10 - 1, -2], random.randint(4, 6)])
+                        eventparticles.append([[mx-100, my], [random.randint(0, 20) / 10 - 1, -2], random.randint(4, 6)])
+                        eventparticles.append([[mx+100, my], [random.randint(0, 20) / 10 - 1, -2], random.randint(4, 6)])
+
+                    else:
+                        pixel_colour = self.event_colours[self.type]
+                    for eventparticle in eventparticles:
+                        eventparticle[0][0] += eventparticle[1][0]
+                        eventparticle[0][1] += eventparticle[1][1]
+                        eventparticle[2] -= 0.2
+                        eventparticle[1][1] += 0.2
+                        radius = eventparticle[2] * 2
+                        screen.blit(self.circle_surf(radius, pixel_colour),(int(eventparticle[0][0] - radius), int(eventparticle[0][1] - radius)),special_flags=BLEND_RGB_ADD)  # cloudy view
+                        if eventparticle[2] <= 0:
+                            eventparticles.remove(eventparticle)
+                        timer.state = True
+                        for pod in pods:
+                            if pod.name == self.location:
+
+                                if timer.time%2 == 0:
+                                    pod.colour = self.event_colours[self.type]
+                                else:
+                                    pod.colour = lightgrey
+                                # Alarm (some dont have alarms)
+                                #alarm_sound.play()
+                elif timer.time < 0:
+                    for pod in pods:
+                        if pod.name == self.location:
+                            pod.colour = lightgrey
+                if timer.time < -3:
+                    unlockdown(self.location)
+                    for timer in clocks:
+                        if timer.name == self.type:
+                            timer.state = False
 
 class Doors():
     def __init__(self, pod_names):
         self.pod_names = pod_names
         self.lockdown = False
-    # Draws doors to the screen
+
     def draw(self, pivot, angle, doorcolour):
         self.pivot = pivot
         self.angle = angle
-        # Colour of the door
         self.doorcolour = doorcolour
         if self.lockdown:
             self.doorcolour = closed
@@ -72,7 +160,6 @@ class Pod():
             else:
                 self.radius = 100/scale
                 self.pod_type = 'B'
-            # Allows us to know where the doors in each pod lead to
             self.topdoor_pod = connecting_rooms[0]
             self.bottomdoor_pod = connecting_rooms[1]
             self.leftdoor_pod = connecting_rooms[0]
@@ -147,7 +234,7 @@ class Pod():
                         self.bottomangle +=1
                 # Bottom door
 
-    def drawpod(self, x,y):
+    def drawpod(self):
         if isinstance(self.position,tuple):
             self.pos = self.position
         else:
@@ -443,24 +530,50 @@ def lockdown(name):
         if name in pod.bottomdoor.pod_names:
             pod.bottomdoor.lockdown = True
 
+def unlockdown(name):
+    for pod in pods:
+        if name in pod.leftdoor.pod_names:
+            pod.leftdoor.lockdown = False
+        if name in pod.rightdoor.pod_names:
+            pod.rightdoor.lockdown = False
+        if name in pod.topdoor.pod_names:
+            pod.topdoor.lockdown = False
+        if name in pod.bottomdoor.pod_names:
+            pod.bottomdoor.lockdown = False
+
 def draw_background():
     # Fills the screen just in case image doesn't load
     screen.fill((255,153,102))
     # Adding background image to screen
     screen.blit(surface,(0,0))
+
+# Gets all x,y coords of circle with given centre x,y and radius
+def points_in_circle_np(radius, x0=0, y0=0, ):
+    x_ = np.arange(x0 - radius - 1, x0 + radius + 1, dtype=int)
+    y_ = np.arange(y0 - radius - 1, y0 + radius + 1, dtype=int)
+    x, y = np.where((x_[:,np.newaxis] - x0)**2 + (y_ - y0)**2 <= radius**2)
+    for x, y in zip(x_[x], y_[y]):
+        yield x, y
+
+
 print(scenario_gui.state.speed,scenario_gui.state.num_astros_arr,scenario_gui.state.timeline)
 scale = 1.25
-multiplier = 2
+multiplier = 1
 # Colours
-lightgrey = (170,170,170)
-grey = (144,144,144)
+lightgrey = (170, 170, 170)
+grey = (144, 144, 144)
 colour = grey
-doorcolour = (220,228,228)
-open = (0,204,0)
-closed = (153,0,0)
-black = (0,0,0)
-lightblue = (0,153,255)
+doorcolour = (220, 228, 228)
+open = (0, 204, 0)
+closed = (153, 0, 0)
+black = (0, 0, 0)
+lightblue = (0, 153, 255)
 podcolour = lightgrey
+red = (255, 0, 0)
+green = (0, 128, 0)
+blue = (0, 0, 255)
+yellow = (255, 255, 0)
+orange = (255, 165, 0)
 # List of all the pods if a new one is to be added it can be done here
 pods = [
         Pod(1,'Living Quarters',['airlock1','outside','Connecting Corridor','outside'],['fakeairlock','empty','normal','empty'],[],(550,450),'',''),
@@ -479,7 +592,7 @@ pods = [
         Pod(13,'airlock4',['Emergency Quarters','outside'],['fakeairlock','airlock'],[],3,'bottom','top'),
         Pod(14,'airlock5',['outside','Storage (External)'],['airlock','fakeairlock'],[],8,'top','top'),
         Pod(15,'airlock5',['Life Support/Power Plant/Recycling','outside'],['fakeairlock','airlock'],[],4,'bottom','top')
-        #Pod(16,'New Pod',['Living Quarters','outside'],['normal','airlock'],[],1,'center','left')
+        #Pod(11,'New Pod',['Living Quarters','outside'],['normal','airlock'],[],6,'center','left')
         ]
 
 pygame.init()
@@ -493,8 +606,35 @@ pygame.display.set_caption('Space Station Simulator')
 icon = pygame.image.load('images/space-station.png')
 pygame.display.set_icon(icon)
 
+# Draws the pods to the screen
+[pod.drawpod() for pod in pods]
+# Drawing doors on the pods
+[pod.drawdoors() for pod in pods]
+
 # Making Astronauts
-astronauts = [Astronaut(0,600,450,2/scale),Astronaut(1,820,450,2/scale),Astronaut(2,1350,450,2/scale),Astronaut(3,1100,445,2/scale)]
+podpos = [i.pos for i in pods][:9]
+podradius = [i.radius for i in pods][:9]
+
+# Converting empty values in list to 0
+for index, item in enumerate(scenario_gui.state.num_astros_arr):
+    if item == '':
+        scenario_gui.state.num_astros_arr[index] = 0
+
+scenario_gui.state.num_astros_arr = list(map(int, scenario_gui.state.num_astros_arr))
+
+astronauts = []
+count = 0
+for index, pos in enumerate(podpos):
+    for num in range(scenario_gui.state.num_astros_arr[index]):
+        randompos = random.choice(list(points_in_circle_np(podradius[index],pos[0],pos[1])))
+        astronauts.append(Astronaut(count,randompos[0],randompos[1],2/scale))
+        count +=1
+
+events = [Emergency('fire','Living Quarters'),Emergency('radiation','Engineering Workshop/Mining Operations/Storage')]
+
+clocks = [Timer('acms_20delay', 6, 'delay', 50, True), Timer('doors', 5, 'doors', 100, False), Timer('fire', 20, 'fire', 150, False),
+          Timer('bio', 20, 'bio', 200, False), Timer('radiation', 20, 'radiation', 250, False), Timer('air', 20, 'air', 300, False)]
+
 
 # Background Image
 surface = pygame.image.load('images/surface.png')
@@ -511,30 +651,40 @@ kill = False
 active_astronaut = 0
 run = True
 counter = 0
+
+pygame.time.set_timer(pygame.USEREVENT, 1000)
+font = pygame.font.SysFont('Consolas', 30)
+
+eventparticles = []
+
 while run:
+
     counter +=1
     #for pod in pods:
-    #print(f'\nPod name = {pod.name}\nLeft state = {bcolors.WARNING if pod.leftdoorstate==True else bcolors.ENDC}{pod.leftdoorstate}{bcolors.ENDC}\nRight state = {bcolors.WARNING if pod.rightdoorstate==True else bcolors.ENDC}{pod.rightdoorstate}{bcolors.ENDC}\nTop state = {bcolors.WARNING if pod.topdoorstate==True else bcolors.ENDC}{pod.topdoorstate}{bcolors.ENDC}\nBottom State = {bcolors.WARNING if pod.bottomdoorstate==True else bcolors.ENDC}{pod.bottomdoorstate}{bcolors.ENDC}')
+    #    print(f'\nPod name = {pod.name}\nLeft state = {bcolors.WARNING if pod.leftdoorstate==True else bcolors.ENDC}{pod.leftdoorstate}{bcolors.ENDC}\nRight state = {bcolors.WARNING if pod.rightdoorstate==True else bcolors.ENDC}{pod.rightdoorstate}{bcolors.ENDC}\nTop state = {bcolors.WARNING if pod.topdoorstate==True else bcolors.ENDC}{pod.topdoorstate}{bcolors.ENDC}\nBottom State = {bcolors.WARNING if pod.bottomdoorstate==True else bcolors.ENDC}{pod.bottomdoorstate}{bcolors.ENDC}')
     clock.tick(FPS)
     keys = pygame.key.get_pressed()
     draw_background()
-    #lockdown('Living Quarters')
+
     # x,y cords of selected astronaut
-    x, y = astronauts[active_astronaut].rect.centerx, astronauts[active_astronaut].rect.centery
+    #x, y = astronauts[active_astronaut].rect.centerx, astronauts[active_astronaut].rect.centery
 
     # Draws the pods to the screen
-    [pod.drawpod(x,y) for pod in pods]
+    [pod.drawpod() for pod in pods]
     # Drawing doors on the pods
     [pod.drawdoors() for pod in pods]
 
     internal_pod_check = ''
+
+    for hazard in events:
+        hazard.start_event()
 
     internal_pods = {}
     for pod in pods:
         if len(pod.internal_pod):
             internal_pods[pod.name]=pod.internal_pod[0]
 
-    if counter % (2) == 0:
+    if counter % (4/multiplier) == 0:
         for pod in pods:
             if pod.orientation == 'left' or pod.pod_type == 'A':
                 if pod.pod_type == 'A':
@@ -614,10 +764,6 @@ while run:
     # Draws the astronauts to the screen
     [astronaut.draw() for astronaut in astronauts]
 
-    '''[['A'], [3]]
-    [4]
-    [['fire','b'],['wait','30']]'''
-
     # Updating selected astronauts movement
     astronauts[active_astronaut].update()
     astronauts[active_astronaut].draw()
@@ -641,6 +787,11 @@ while run:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
+        if event.type == pygame.USEREVENT:
+            for timer in clocks:
+                if timer.state:
+                    timer.time -= 1
+                    timer.timetext = str(timer.time).rjust(3) if timer.time > 0 else '0'.rjust(3)
         # Keyboard keypresses
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_a:
@@ -678,5 +829,8 @@ while run:
                 if astronaut.rect.collidepoint(mouse_position):
                     # Setting which astronaut is to be moved using their id
                     active_astronaut = astronaut.id
+    for timer in clocks:
+        if timer.state:
+            timer.display()
     pygame.display.update()
 pygame.quit()
