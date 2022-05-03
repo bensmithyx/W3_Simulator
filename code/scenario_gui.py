@@ -166,19 +166,19 @@ def init_disaster_button_frame(master):
     Grid.columnconfigure(frame, 1, weight=1)
 
     fire_btn = Button(frame, text="Fire", bg="orange", font=20,
-                      command=lambda: MainWindow.render_add_disaster("Fire"), highlightthickness=0)
+                      command=lambda: MainWindow.render_add_disaster("fire"), highlightthickness=0)
     fire_btn.grid(row=0, column=0, sticky="news", padx=15, pady=15)
 
     bio_btn = Button(frame, text="Biohazard", bg="green", font=20,
-                     command=lambda: MainWindow.render_add_disaster("Biohazard"), highlightthickness=0)
+                     command=lambda: MainWindow.render_add_disaster("bio"), highlightthickness=0)
     bio_btn.grid(row=0, column=1, sticky="news", padx=15, pady=15)
 
     air_btn = Button(frame, text="Air Hazard", bg="blue", font=20,
-                     command=lambda: MainWindow.render_add_disaster("Air Hazard"), highlightthickness=0)
+                     command=lambda: MainWindow.render_add_disaster("airquality"), highlightthickness=0)
     air_btn.grid(row=1, column=0, sticky="news", padx=15, pady=15)
 
     rad_btn = Button(frame, text="Radiation", bg="yellow", font=20,
-                     command=lambda: MainWindow.render_add_disaster("Radiation"), highlightthickness=0)
+                     command=lambda: MainWindow.render_add_disaster("radiation"), highlightthickness=0)
     rad_btn.grid(row=1, column=1, sticky="news", padx=15, pady=15)
 
     return frame
@@ -330,13 +330,13 @@ def init_timeline_frame(master):
     frame['relief'] = "sunken"
 
     for index, entry in enumerate(state.timeline, start=0):
-        if entry[0] == "Fire":
+        if entry[0] == "fire":
             colour = "orange"
-        elif entry[0] == "Biohazard":
+        elif entry[0] == "bio":
             colour = "green"
-        elif entry[0] == "Air Hazard":
+        elif entry[0] == "airquality":
             colour = "blue"
-        elif entry[0] == "Radiation":
+        elif entry[0] == "radiation":
             colour = "yellow"
         elif entry[0] == "TIME":
             colour = "#fb7dff"
@@ -476,7 +476,7 @@ def go_back():
 
 
 def save(context):
-    disaster_list = ["Fire", "Biohazard", "Air Hazard", "Radiation"]
+    disaster_list = ['fire','bio','airquality','radiation','airpressure']
     disaster_array = []
     if context == "astros":
         for i in range(len(MainWindow.entries)):
@@ -506,7 +506,6 @@ def save(context):
 
         disaster_array.append(MainWindow.entries[0].get())
         state.timeline.append(disaster_array)
-        print(state.timeline)
 
     else:
         print("Error while saving: no context")

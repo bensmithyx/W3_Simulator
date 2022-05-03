@@ -181,6 +181,8 @@ class Pod():
             return f"Name = {self.name}\nPod Type = {self.pod_type}\nLeft Door ({self.door_types[0]}) = {self.leftdoor_pod}\nTop Door ({self.door_types[1]}) = {self.topdoor_pod}\nRight Door ({self.door_types[2]}) = {self.rightdoor_pod}\nBottom Door ({self.door_types[3]}) = {self.bottomdoor_pod}\n{show_internal_connecting_rooms if self.internal_pod else ''}Connected to = {self.side_to_attach_door}\n"
         elif self.pod_type == 'B':
             return f"Name = {self.name}\nPod Type = {self.pod_type}\nTop Door ({self.door_types[0]}) = {self.topdoor_pod}\nBottom Door ({self.door_types[1]}) = {self.bottomdoor_pod}\nConnected to = {self.side_to_attach_door}\n"
+        elif self.pod_type == 'C':
+            return f"{self.name}"
 
     def closedoor(self, door_to_close):
         if self.orientation == 'left' or self.pod_type == 'A':
@@ -616,21 +618,22 @@ podpos = [i.pos for i in pods][:9]
 podradius = [i.radius for i in pods][:9]
 
 # Converting empty values in list to 0
-for index, item in enumerate(scenario_gui.state.num_astros_arr):
+for index1, item in enumerate(scenario_gui.state.num_astros_arr):
     if item == '':
-        scenario_gui.state.num_astros_arr[index] = 0
+        scenario_gui.state.num_astros_arr[index1] = 0
 
 scenario_gui.state.num_astros_arr = list(map(int, scenario_gui.state.num_astros_arr))
 
 astronauts = []
 count = 0
-for index, pos in enumerate(podpos):
-    for num in range(scenario_gui.state.num_astros_arr[index]):
-        randompos = random.choice(list(points_in_circle_np(podradius[index],pos[0],pos[1])))
+for index1, pos in enumerate(podpos):
+    for num in range(scenario_gui.state.num_astros_arr[index1]):
+        randompos = random.choice(list(points_in_circle_np(podradius[index1],pos[0],pos[1])))
         astronauts.append(Astronaut(count,randompos[0],randompos[1],2/scale))
         count +=1
 
-events = [Emergency('fire','Living Quarters'),Emergency('radiation','Engineering Workshop/Mining Operations/Storage')]
+
+events = []
 
 clocks = [Timer('acms_20delay', 6, 'delay', 50, True), Timer('doors', 5, 'doors', 100, False), Timer('fire', 20, 'fire', 150, False),
           Timer('bio', 20, 'bio', 200, False), Timer('radiation', 20, 'radiation', 250, False), Timer('air', 20, 'air', 300, False)]
@@ -651,13 +654,20 @@ kill = False
 active_astronaut = 0
 run = True
 counter = 0
-
+count = 0
+wait_time = 0
 pygame.time.set_timer(pygame.USEREVENT, 1000)
 font = pygame.font.SysFont('Consolas', 30)
 
 eventparticles = []
 
 while run:
+    if count >= len(scenario_gui.state.timeline):
+        #print('simulation ended')
+        current = 0
+    else:
+        current = scenario_gui.state.timeline[count]
+
 
     counter +=1
     #for pod in pods:
@@ -666,9 +676,6 @@ while run:
     keys = pygame.key.get_pressed()
     draw_background()
 
-    # x,y cords of selected astronaut
-    #x, y = astronauts[active_astronaut].rect.centerx, astronauts[active_astronaut].rect.centery
-
     # Draws the pods to the screen
     [pod.drawpod() for pod in pods]
     # Drawing doors on the pods
@@ -676,8 +683,45 @@ while run:
 
     internal_pod_check = ''
 
+    if current != 0:
+        if current[0] == 'TIME':
+            wait_time +=1
+            if int(current[1]) == wait_time:
+                count +=1
+                wait_time = 0
+        else:
+            events.append(Emergency(current[0],'Living Quarters'))
+            count+=1
+
     for hazard in events:
         hazard.start_event()
+
+    # Draws the astronauts to the screen
+    [astronaut.draw() for astronaut in astronauts]
+
+    # Updating selected astronauts movement
+    astronauts[active_astronaut].update()
+    astronauts[active_astronaut].draw()
+
+    if astronauts[active_astronaut].alive:
+        # Update astronauts[active_astronaut] actions
+        if moving_left or moving_right:
+            # 1 means running left or right
+            astronauts[active_astronaut].update_action(1)
+        elif moving_down:
+            # 3 is running down
+            astronauts[active_astronaut].update_action(3)
+        elif moving_up:
+            # 4 is runnig up
+            astronauts[active_astronaut].update_action(4)
+        else:
+            # 0 means idle
+            astronauts[active_astronaut].update_action(0)
+        astronauts[active_astronaut].move()
+
+    # x,y cords of selected astronaut
+    x, y = astronauts[active_astronaut].rect.centerx, astronauts[active_astronaut].rect.centery
+
 
     internal_pods = {}
     for pod in pods:
@@ -757,32 +801,7 @@ while run:
                      else:
                          pod.closedoor('bottom')
 
-    '''for pod in pods:
-        if pod.id in [1,2]:
-            print(pod.name,pod.leftdoorstate,pod.rightdoorstate,pod.topdoorstate,pod.bottomdoorstate)'''
 
-    # Draws the astronauts to the screen
-    [astronaut.draw() for astronaut in astronauts]
-
-    # Updating selected astronauts movement
-    astronauts[active_astronaut].update()
-    astronauts[active_astronaut].draw()
-
-    if astronauts[active_astronaut].alive:
-        # Update astronauts[active_astronaut] actions
-        if moving_left or moving_right:
-            # 1 means running left or right
-            astronauts[active_astronaut].update_action(1)
-        elif moving_down:
-            # 3 is running down
-            astronauts[active_astronaut].update_action(3)
-        elif moving_up:
-            # 4 is runnig up
-            astronauts[active_astronaut].update_action(4)
-        else:
-            # 0 means idle
-            astronauts[active_astronaut].update_action(0)
-        astronauts[active_astronaut].move()
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
