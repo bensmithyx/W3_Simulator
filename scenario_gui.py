@@ -1,5 +1,14 @@
 from tkinter import *
 
+'''
+Got issues with removing the items in the timeline
+Whatever I do it always just removes the last one that was entered
+Cannot think of a way to keep track of which button is associated with each item
+Worst case scenario instead of just removing one item,
+    it would be trivial to make a button that clears them all
+'''
+
+
 class State:
     def __init__(self):
         self.speed = "1x"
