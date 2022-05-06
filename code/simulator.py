@@ -216,26 +216,26 @@ class Pod():
                 else:
                     self.bottomdoorstate = False
 
-    def opendoor(self, door_to_open):
+    def opendoor(self, admin, door_to_open):
         if self.orientation == 'left' or self.pod_type == 'A':
             if door_to_open == 'left':
-                if not self.leftdoor.lockdown:
+                if not self.leftdoor.lockdown or admin:
                     if self.leftangle > -45:
                         self.leftangle -=1*multiplier
                 # Left door
             elif door_to_open == 'right':
-                if not self.rightdoor.lockdown:
+                if not self.rightdoor.lockdown or admin:
                     if self.rightangle > -45:
                         self.rightangle -=1*multiplier
                 # Right door
         if self.orientation == 'top' or self.pod_type == 'A':
             if door_to_open  == 'top':
-                if not self.topdoor.lockdown:
+                if not self.topdoor.lockdown or admin:
                     if self.topangle < 135 :
                         self.topangle +=1*multiplier
                 # Top door
             elif door_to_open == 'bottom':
-                if not self.bottomdoor.lockdown:
+                if not self.bottomdoor.lockdown or admin:
                     if self.bottomangle < 135:
                         self.bottomangle +=1*multiplier
                 # Bottom door
@@ -335,6 +335,7 @@ class Astronaut(pygame.sprite.Sprite):
         self.action = 0
         self.id = id
         self.pld = True
+        self.admin = False
         self.switch = True
         # Index 0 is IDLE animations
         animation_types = ['astronautidle', 'astronautrunning','astronautdead','astronautrunningdown','astronautrunningup']
@@ -535,22 +536,22 @@ def lockdown(id):
                     pod.leftdoor.lockdown = True
                     if pod.leftdoorstate == True:
                         podid = pods[index(pod.leftdoor_pod)].id
-                        Emergency('fire',podid).start_event()
+                        #Emergency('fire',podid).start_event()
                 if name in pod.rightdoor.pod_names:
                     pod.rightdoor.lockdown = True
                     if pod.rightdoorstate == True:
                         podid = pods[index(pod.rightdoor_pod)].id
-                        Emergency('fire',podid).start_event()
+                        #Emergency('fire',podid).start_event()
                 if name in pod.topdoor.pod_names:
                     pod.topdoor.lockdown = True
                     if pod.topdoorstate == True:
                         podid = pods[index(pod.topdoor_pod)].id
-                        Emergency('fire',podid).start_event()
+                        #Emergency('fire',podid).start_event()
                 if name in pod.bottomdoor.pod_names:
                     pod.bottomdoor.lockdown = True
                     if pod.leftdoorstate == True:
                         podid = pods[index(pod.bottomdoor_pod)].id
-                        Emergency('fire',podid).start_event()
+                        #Emergency('fire',podid).start_event()
 
 def unlockdown(id):
     for pod in pods:
@@ -755,7 +756,7 @@ while run:
         if len(pod.internal_pod):
             internal_pods[pod.name]=pod.internal_pod[0]
 
-    if counter % (4/multiplier) == 0:
+    if counter % (2/multiplier) == 0:
         for pod in pods:
             if pod.orientation == 'left' or pod.pod_type == 'A':
                 if pod.pod_type == 'A':
@@ -773,22 +774,22 @@ while run:
 
                 if pod.connecting_rooms[index1] not in ['outside','empty']:
                     if pod.leftdoorstate == True and pod.rightdoorstate == False and pod.topdoorstate == False and pod.bottomdoorstate == False and pods[index(pod.connecting_rooms[index1])].leftdoorstate == False and pods[index(pod.connecting_rooms[index1])].topdoorstate == False and pods[index(pod.connecting_rooms[index1])].bottomdoorstate == False:
-                        pod.opendoor('left')
+                        pod.opendoor(astronauts[active_astronaut].admin, 'left')
                     else:
                         pod.closedoor('left')
                 elif pod.connecting_rooms[index1] == 'outside':
                     if pod.leftdoorstate == True and pod.rightdoorstate == False and pod.topdoorstate == False and pod.bottomdoorstate == False:
-                        pod.opendoor('left')
+                        pod.opendoor(astronauts[active_astronaut].admin, 'left')
                     else:
                         pod.closedoor('left')
                 if pod.connecting_rooms[index2] not in ['outside','empty']:
                     if pod.rightdoorstate == True and pod.leftdoorstate == False and pod.topdoorstate == False and pod.bottomdoorstate == False and pods[index(pod.connecting_rooms[index2])].rightdoorstate == False and pods[index(pod.connecting_rooms[index2])].topdoorstate == False and pods[index(pod.connecting_rooms[index2])].bottomdoorstate == False:
-                        pod.opendoor('right')
+                        pod.opendoor(astronauts[active_astronaut].admin, 'right')
                     else:
                         pod.closedoor('right')
                 elif pod.connecting_rooms[index2] == 'outside':
                     if pod.rightdoorstate == True and pod.leftdoorstate == False and pod.topdoorstate == False and pod.bottomdoorstate == False:
-                        pod.opendoor('right')
+                        pod.opendoor(astronauts[active_astronaut].admin, 'right')
                     else:
                         pod.closedoor('right')
 
@@ -808,23 +809,23 @@ while run:
 
                 if pod.connecting_rooms[index1] not in ['outside','empty']:
                     if pod.topdoorstate == True and pod.bottomdoorstate == False and pod.leftdoorstate == False and pod.rightdoorstate == False and pods[index(pod.connecting_rooms[index1])].topdoorstate == False and pods[index(pod.connecting_rooms[index1])].rightdoorstate == False and pods[index(pod.connecting_rooms[index1])].leftdoorstate == False:
-                        pod.opendoor('top')
+                        pod.opendoor(astronauts[active_astronaut].admin, 'top')
                     else:
                         #
                          pod.closedoor('top')
                 elif pod.connecting_rooms[index1] == 'outside':
                     if pod.topdoorstate == True and pod.bottomdoorstate == False and pod.leftdoorstate == False and pod.rightdoorstate == False:
-                        pod.opendoor('top')
+                        pod.opendoor(astronauts[active_astronaut].admin, 'top')
                     else:
                         pod.closedoor('top')
                 if pod.connecting_rooms[index2] not in ['outside', 'empty']:
                     if pod.bottomdoorstate == True and pod.topdoorstate == False and pod.leftdoorstate == False and pod.rightdoorstate == False and pods[index(pod.connecting_rooms[index2])].bottomdoorstate == False and pods[index(pod.connecting_rooms[index2])].rightdoorstate == False and pods[index(pod.connecting_rooms[index2])].leftdoorstate == False:
-                        pod.opendoor('bottom')
+                        pod.opendoor(astronauts[active_astronaut].admin, 'bottom')
                     else:
                         pod.closedoor('bottom')
                 elif pod.connecting_rooms[index2] == 'outside':
                      if pod.bottomdoorstate == True and pod.topdoorstate == False and pod.leftdoorstate == False and pod.rightdoorstate == False:
-                         pod.opendoor('bottom')
+                         pod.opendoor(astronauts[active_astronaut].admin, 'bottom')
                      else:
                          pod.closedoor('bottom')
 
