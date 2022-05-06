@@ -334,6 +334,7 @@ class Astronaut(pygame.sprite.Sprite):
         self.update_time = pygame.time.get_ticks()
         self.action = 0
         self.id = id
+        self.pld = True
         self.switch = True
         # Index 0 is IDLE animations
         animation_types = ['astronautidle', 'astronautrunning','astronautdead','astronautrunningdown','astronautrunningup']
@@ -729,7 +730,7 @@ while run:
     astronauts[active_astronaut].update()
     astronauts[active_astronaut].draw()
 
-    if astronauts[active_astronaut].alive:
+    if astronauts[active_astronaut].alive and astronauts[active_astronaut].pld=True:
         # Update astronauts[active_astronaut] actions
         if moving_left or moving_right:
             # 1 means running left or right
