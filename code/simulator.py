@@ -26,7 +26,7 @@ class Emergency:
         self.event_colours = {'fire':orange,'bio':yellow,'airquality':blue,'radiation':green,'airpressure':red}
         # times are in the order delay,time to fix event
         self.event_times = {'fire':[20,5],'bio':[0,5],'airquality':[20,5],'radiation':[20,5],'airpressure':[20,5]}
-
+        self.firstrun = False
     def circle_surf(self, radius, color):  # cloudy view
         surf = pygame.Surface((radius * 2, radius * 2))
         pygame.draw.circle(surf, color, (radius, radius), radius)
@@ -34,19 +34,22 @@ class Emergency:
         return surf
 
     def start_event(self):
+        if not self.firstrun:
+            self.start = time.time()
+
+        self.firstrun = True
+
         for pod in pods:
-            if pod.name == self.location:
+            if pod.id == self.location:
                 mx, my = pod.pos[0], pod.pos[1]
                 break
         eventparticles.append([[mx, my], [random.randint(0, 20) / 10 - 1, -2], random.randint(4, 6)])
+        if time.time() >= self.start + 3:
+                # Doors lock
+                lockdown(self.location)
 
         # Event
         for timer in clocks:
-            if timer.name == 'acms_20delay':
-                if timer.time == 0:
-                    # Doors lock
-                    lockdown(self.location)
-
             # Surpress
             if timer.name == self.type:
                 if timer.time > 0:
@@ -71,7 +74,7 @@ class Emergency:
                             eventparticles.remove(eventparticle)
                         timer.state = True
                         for pod in pods:
-                            if pod.name == self.location:
+                            if pod.id == self.location:
 
                                 if timer.time%2 == 0:
                                     pod.colour = self.event_colours[self.type]
@@ -81,7 +84,7 @@ class Emergency:
                                 #alarm_sound.play()
                 elif timer.time < 0:
                     for pod in pods:
-                        if pod.name == self.location:
+                        if pod.id == self.location:
                             pod.colour = lightgrey
                 if timer.time < -3:
                     unlockdown(self.location)
@@ -521,27 +524,45 @@ def findpath(source, target, newplace, path):
                 else: return result
 
 # Locks all doors in a given pod
-def lockdown(name):
+def lockdown(id):
     for pod in pods:
-        if name in pod.leftdoor.pod_names:
-            pod.leftdoor.lockdown = True
-        if name in pod.rightdoor.pod_names:
-            pod.rightdoor.lockdown = True
-        if name in pod.topdoor.pod_names:
-            pod.topdoor.lockdown = True
-        if name in pod.bottomdoor.pod_names:
-            pod.bottomdoor.lockdown = True
+        if pod.id == id:
+            name = pod.name
+            for pod in pods:
+                if name in pod.leftdoor.pod_names:
+                    pod.leftdoor.lockdown = True
+                    if pod.leftdoorstate == True:
+                        podid = pods[index(pod.leftdoor_pod)].id
+                        Emergency('fire',podid).start_event()
+                if name in pod.rightdoor.pod_names:
+                    pod.rightdoor.lockdown = True
+                    if pod.rightdoorstate == True:
+                        podid = pods[index(pod.rightdoor_pod)].id
+                        Emergency('fire',podid).start_event()
+                if name in pod.topdoor.pod_names:
+                    pod.topdoor.lockdown = True
+                    if pod.topdoorstate == True:
+                        podid = pods[index(pod.topdoor_pod)].id
+                        Emergency('fire',podid).start_event()
+                if name in pod.bottomdoor.pod_names:
+                    pod.bottomdoor.lockdown = True
+                    if pod.leftdoorstate == True:
+                        podid = pods[index(pod.bottomdoor_pod)].id
+                        Emergency('fire',podid).start_event()
 
-def unlockdown(name):
+def unlockdown(id):
     for pod in pods:
-        if name in pod.leftdoor.pod_names:
-            pod.leftdoor.lockdown = False
-        if name in pod.rightdoor.pod_names:
-            pod.rightdoor.lockdown = False
-        if name in pod.topdoor.pod_names:
-            pod.topdoor.lockdown = False
-        if name in pod.bottomdoor.pod_names:
-            pod.bottomdoor.lockdown = False
+        if pod.id == id:
+            name = pod.name
+            for pod in pods:
+                if name in pod.leftdoor.pod_names:
+                    pod.leftdoor.lockdown = False
+                if name in pod.rightdoor.pod_names:
+                    pod.rightdoor.lockdown = False
+                if name in pod.topdoor.pod_names:
+                    pod.topdoor.lockdown = False
+                if name in pod.bottomdoor.pod_names:
+                    pod.bottomdoor.lockdown = False
 
 def draw_background():
     # Fills the screen just in case image doesn't load
@@ -635,8 +656,8 @@ for index1, pos in enumerate(podpos):
 
 events = []
 
-clocks = [Timer('acms_20delay', 6, 'delay', 50, True), Timer('doors', 5, 'doors', 100, False), Timer('fire', 20, 'fire', 150, False),
-          Timer('bio', 20, 'bio', 200, False), Timer('radiation', 20, 'radiation', 250, False), Timer('air', 20, 'air', 300, False)]
+clocks = [Timer('acms_20delay', 6, 'delay', 50, False), Timer('doors', 5, 'doors', 100, False), Timer('fire', 20, 'fire', 150, False),
+          Timer('bio', 20, 'bio', 200, False), Timer('radiation', 20, 'radiation', 250, False), Timer('airquality', 20, 'airquality', 300, False),Timer('airpressure', 20, 'airquality', 350, False)]
 
 
 # Background Image
@@ -655,11 +676,12 @@ active_astronaut = 0
 run = True
 counter = 0
 count = 0
-wait_time = 0
+wait_time = False
 pygame.time.set_timer(pygame.USEREVENT, 1000)
 font = pygame.font.SysFont('Consolas', 30)
 
 eventparticles = []
+
 
 while run:
     if count >= len(scenario_gui.state.timeline):
@@ -685,12 +707,15 @@ while run:
 
     if current != 0:
         if current[0] == 'TIME':
-            wait_time +=1
-            if int(current[1]) == wait_time:
-                count +=1
-                wait_time = 0
+            if not wait_time:
+                start = time.time()
+                wait_time = True
+
+            if time.time() >= start + int(current[1]):
+                wait_time=False
+                count+=1
         else:
-            events.append(Emergency(current[0],'Living Quarters'))
+            events.append(Emergency(current[0],int(current[1])))
             count+=1
 
     for hazard in events:

@@ -106,13 +106,12 @@ class MainWindow:
 
         input_text = disaster + ":"
         input_frame = init_input_frame(self.canvas, input_text)
-        input_frame.place(relx=0.5, rely=0.5, relwidth=0.95, relheight=0.075, anchor="center")
-
-        instructions = Label(self.canvas,
-                             text="Please enter the pod the disaster should take place in."
-                                  "\nEnter the pod letter (A, B, F, etc)",
-                             font=20, bg='grey')
-        instructions.place(relx=0.025, rely=0.05, relwidth=0.6, relheight=0.2, anchor="nw")
+        input_frame.place(relx=0.5, rely=0.7, relwidth=0.95, relheight=0.075, anchor="center")
+        pod_name_arr = ["Living Quarters", "Connecting Corridor", "Emergency Quarters", "Life Support/Power Plant/Recycling", "Food Production", "Engineering Workshop/Mining Operations/Storage", "Bio-Research", "Storage (External)", "Comms And Control Centre"]
+        newline = '\n'
+        output = list([f'{index+1} - {pod}' for index, pod in enumerate(pod_name_arr)])
+        instructions = Label(self.canvas,text=f"Please enter the pod the disaster should take place in{newline}{newline.join(output)}",font=20, bg='grey')
+        instructions.place(relx=0.025, rely=0.05, relwidth=0.8, relheight=0.5, anchor="nw")
 
         save_cancel_frame = init_save_cancel_frame(self.canvas, disaster)
         save_cancel_frame.place(relx=0.5, rely=0.85, relwidth=0.8, relheight=0.175, anchor="center")
@@ -169,7 +168,7 @@ def init_disaster_button_frame(master):
                       command=lambda: MainWindow.render_add_disaster("fire"), highlightthickness=0)
     fire_btn.grid(row=0, column=0, sticky="news", padx=15, pady=15)
 
-    bio_btn = Button(frame, text="Biohazard", bg="green", font=20,
+    bio_btn = Button(frame, text="Biohazard", bg="yellow", font=20,
                      command=lambda: MainWindow.render_add_disaster("bio"), highlightthickness=0)
     bio_btn.grid(row=0, column=1, sticky="news", padx=15, pady=15)
 
@@ -177,7 +176,7 @@ def init_disaster_button_frame(master):
                      command=lambda: MainWindow.render_add_disaster("airquality"), highlightthickness=0)
     air_btn.grid(row=1, column=0, sticky="news", padx=15, pady=15)
 
-    rad_btn = Button(frame, text="Radiation", bg="yellow", font=20,
+    rad_btn = Button(frame, text="Radiation", bg="green", font=20,
                      command=lambda: MainWindow.render_add_disaster("radiation"), highlightthickness=0)
     rad_btn.grid(row=1, column=1, sticky="news", padx=15, pady=15)
 
@@ -333,11 +332,11 @@ def init_timeline_frame(master):
         if entry[0] == "fire":
             colour = "orange"
         elif entry[0] == "bio":
-            colour = "green"
+            colour = "yellow"
         elif entry[0] == "airquality":
             colour = "blue"
         elif entry[0] == "radiation":
-            colour = "yellow"
+            colour = "green"
         elif entry[0] == "TIME":
             colour = "#fb7dff"
         else:
