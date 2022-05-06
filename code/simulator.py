@@ -730,7 +730,7 @@ while run:
     astronauts[active_astronaut].update()
     astronauts[active_astronaut].draw()
 
-    if astronauts[active_astronaut].alive and astronauts[active_astronaut].pld=True:
+    if astronauts[active_astronaut].alive:
         # Update astronauts[active_astronaut] actions
         if moving_left or moving_right:
             # 1 means running left or right
@@ -763,7 +763,7 @@ while run:
                 else:
                     index1, index2 = 0, 1
 
-                if keys[pygame.K_e]:
+                if  keys[pygame.K_e] and astronauts[active_astronaut].pld == True:
                     if pod.connecting_rooms[index1] != 'empty' and pod.side_to_attach_door != 'right':
                         if checkcollided(pod.leftdoorpos[0],pod.leftdoorpos[1],x,y):
                             pod.leftdoorstate = not pod.leftdoorstate
@@ -798,7 +798,7 @@ while run:
                 else:
                     index1, index2 = 0, 1
 
-                if keys[pygame.K_e]:
+                if  keys[pygame.K_e] and astronauts[active_astronaut].pld == True:
                     if pod.connecting_rooms[index1] != 'empty' and pod.side_to_attach_door != 'bottom':
                         if checkcollided(pod.topdoorpos[0],pod.topdoorpos[1],x,y):
                             pod.topdoorstate = not pod.topdoorstate
