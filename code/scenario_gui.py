@@ -97,13 +97,13 @@ class MainWindow:
 
         input_text = disaster + ":"
         input_frame = init_input_frame(self.canvas, input_text)
-        input_frame.place(relx=0.5, rely=0.5, relwidth=0.95, relheight=0.075, anchor="center")
-
-        instructions = Label(self.canvas,
-                             text="Please enter the pod the disaster should take place in."
-                                  "\nEnter the pod letter (A, B, F, etc)",
-                             font=20, bg='grey')
-        instructions.place(relx=0.025, rely=0.05, relwidth=0.6, relheight=0.2, anchor="nw")
+        
+        input_frame.place(relx=0.5, rely=0.7, relwidth=0.95, relheight=0.075, anchor="center")
+        pod_name_arr = ["Living Quarters", "Connecting Corridor", "Emergency Quarters", "Life Support/Power Plant/Recycling", "Food Production", "Engineering Workshop/Mining Operations/Storage", "Bio-Research", "Storage (External)", "Comms And Control Centre"]
+        newline = '\n'
+        output = list([f'{index+1} - {pod}' for index, pod in enumerate(pod_name_arr)])
+        instructions = Label(self.canvas,text=f"Please enter the pod the disaster should take place in{newline}{newline.join(output)}",font=20, bg='grey')
+        instructions.place(relx=0.025, rely=0.05, relwidth=0.8, relheight=0.5, anchor="nw")
 
         save_cancel_frame = init_save_cancel_frame(self.canvas, disaster)
         save_cancel_frame.place(relx=0.5, rely=0.85, relwidth=0.8, relheight=0.175, anchor="center")
