@@ -193,26 +193,26 @@ class Pod():
             if door_to_close == 'left':
                 # Left door
                 if self.leftangle < 90:
-                    self.leftangle +=1
+                    self.leftangle +=1*multiplier
                 else:
                     self.leftdoorstate = False
             elif door_to_close == 'right':
                 # Right door
                 if self.rightangle < 90:
-                    self.rightangle +=1
+                    self.rightangle +=1*multiplier
                 else:
                     self.rightdoorstate = False
         if self.orientation == 'top' or self.pod_type == 'A':
             if door_to_close  == 'top':
                 # Top door
                 if self.topangle > 0:
-                    self.topangle -=1
+                    self.topangle -=1*multiplier
                 else:
                     self.topdoorstate = False
             elif door_to_close == 'bottom':
                 # Bottom door
                 if self.bottomangle > 0:
-                    self.bottomangle -=1
+                    self.bottomangle -=1*multiplier
                 else:
                     self.bottomdoorstate = False
 
@@ -221,23 +221,23 @@ class Pod():
             if door_to_open == 'left':
                 if not self.leftdoor.lockdown:
                     if self.leftangle > -45:
-                        self.leftangle -=1
+                        self.leftangle -=1*multiplier
                 # Left door
             elif door_to_open == 'right':
                 if not self.rightdoor.lockdown:
                     if self.rightangle > -45:
-                        self.rightangle -=1
+                        self.rightangle -=1*multiplier
                 # Right door
         if self.orientation == 'top' or self.pod_type == 'A':
             if door_to_open  == 'top':
                 if not self.topdoor.lockdown:
                     if self.topangle < 135 :
-                        self.topangle +=1
+                        self.topangle +=1*multiplier
                 # Top door
             elif door_to_open == 'bottom':
                 if not self.bottomdoor.lockdown:
                     if self.bottomangle < 135:
-                        self.bottomangle +=1
+                        self.bottomangle +=1*multiplier
                 # Bottom door
 
     def drawpod(self):
@@ -582,7 +582,7 @@ def points_in_circle_np(radius, x0=0, y0=0, ):
 
 print(scenario_gui.state.speed,scenario_gui.state.num_astros_arr,scenario_gui.state.timeline)
 scale = 1.25
-multiplier = 1
+multiplier = int(scenario_gui.state.speed[:-1])
 # Colours
 lightgrey = (170, 170, 170)
 grey = (144, 144, 144)
@@ -835,7 +835,7 @@ while run:
         if event.type == pygame.USEREVENT:
             for timer in clocks:
                 if timer.state:
-                    timer.time -= 1*int(scenario_gui.state.speed[:-1])
+                    timer.time -= 1*multiplier
                     timer.timetext = str(timer.time).rjust(3) if timer.time > 0 else '0'.rjust(3)
         # Keyboard keypresses
         if event.type == pygame.KEYDOWN:
