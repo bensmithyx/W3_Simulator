@@ -220,23 +220,23 @@ class Pod():
         if self.orientation == 'left' or self.pod_type == 'A':
             if door_to_open == 'left':
                 if not self.leftdoor.lockdown:
-                    if self.leftangle > 0:
+                    if self.leftangle > -45:
                         self.leftangle -=1
                 # Left door
             elif door_to_open == 'right':
                 if not self.rightdoor.lockdown:
-                    if self.rightangle > 0:
+                    if self.rightangle > -45:
                         self.rightangle -=1
                 # Right door
         if self.orientation == 'top' or self.pod_type == 'A':
             if door_to_open  == 'top':
                 if not self.topdoor.lockdown:
-                    if self.topangle < 90 :
+                    if self.topangle < 135 :
                         self.topangle +=1
                 # Top door
             elif door_to_open == 'bottom':
                 if not self.bottomdoor.lockdown:
-                    if self.bottomangle < 90:
+                    if self.bottomangle < 135:
                         self.bottomangle +=1
                 # Bottom door
 
