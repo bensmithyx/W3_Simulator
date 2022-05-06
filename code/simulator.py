@@ -25,7 +25,7 @@ class Emergency:
         self.location = location
         self.event_colours = {'fire':orange,'bio':yellow,'airquality':blue,'radiation':green,'airpressure':red}
         # times are in the order delay,time to fix event
-        self.event_times = {'fire':[20,5],'bio':[0,5],'airquality':[20,5],'radiation':[20,5],'airpressure':[20,5]}
+        self.event_times = {'fire':[10,5],'bio':[0,5],'airquality':[20,5],'radiation':[20,5],'airpressure':[20,5]}
         self.firstrun = False
     def circle_surf(self, radius, color):  # cloudy view
         surf = pygame.Surface((radius * 2, radius * 2))
@@ -56,10 +56,7 @@ class Emergency:
                     if timer.time < self.event_times[self.type][1]:
                         pixel_colour = (255, 255, 255)
                         eventparticles.append([[mx, my], [random.randint(0, 20) / 10 - 1, -2], random.randint(4, 6)])
-                        eventparticles.append([[mx, my+100], [random.randint(0, 20) / 10 - 1, -2], random.randint(4, 6)])
-                        eventparticles.append([[mx, my-100], [random.randint(0, 20) / 10 - 1, -2], random.randint(4, 6)])
-                        eventparticles.append([[mx-100, my], [random.randint(0, 20) / 10 - 1, -2], random.randint(4, 6)])
-                        eventparticles.append([[mx+100, my], [random.randint(0, 20) / 10 - 1, -2], random.randint(4, 6)])
+
 
                     else:
                         pixel_colour = self.event_colours[self.type]
@@ -83,10 +80,14 @@ class Emergency:
                                 # Alarm (some dont have alarms)
                                 #alarm_sound.play()
                 elif timer.time < 0:
+                    if timer.time < -2 and timer.time > -4:
+                        screen.blit(font.render('All clear', True, (0, 0, 0)), (mx, my))
                     for pod in pods:
                         if pod.id == self.location:
                             pod.colour = lightgrey
-                if timer.time < -3:
+
+
+                if timer.time < -4:
                     unlockdown(self.location)
                     for timer in clocks:
                         if timer.name == self.type:
@@ -614,7 +615,7 @@ pods = [
         Pod(12,'airlock3',['Bio-Research','Engineering Workshop/Mining Operations/Storage'],['fakeairlock','fakeairlock'],[],6,'top','top'),
         Pod(13,'airlock4',['Emergency Quarters','outside'],['fakeairlock','airlock'],[],3,'bottom','top'),
         Pod(14,'airlock5',['outside','Storage (External)'],['airlock','fakeairlock'],[],8,'top','top'),
-        Pod(15,'airlock5',['Life Support/Power Plant/Recycling','outside'],['fakeairlock','airlock'],[],4,'bottom','top')
+        Pod(15,'airlock6',['Life Support/Power Plant/Recycling','outside'],['fakeairlock','airlock'],[],4,'bottom','top')
         #Pod(11,'New Pod',['Living Quarters','outside'],['normal','airlock'],[],6,'center','left')
         ]
 
@@ -834,7 +835,7 @@ while run:
         if event.type == pygame.USEREVENT:
             for timer in clocks:
                 if timer.state:
-                    timer.time -= 1
+                    timer.time -= 1*int(scenario_gui.state.speed[:-1])
                     timer.timetext = str(timer.time).rjust(3) if timer.time > 0 else '0'.rjust(3)
         # Keyboard keypresses
         if event.type == pygame.KEYDOWN:
