@@ -106,12 +106,13 @@ class MainWindow:
 
         input_text = disaster + ":"
         input_frame = init_input_frame(self.canvas, input_text)
-        input_frame.place(relx=0.5, rely=0.7, relwidth=0.95, relheight=0.075, anchor="center")
-        pod_name_arr = ["Living Quarters", "Connecting Corridor", "Emergency Quarters", "Life Support/Power Plant/Recycling", "Food Production", "Engineering Workshop/Mining Operations/Storage", "Bio-Research", "Storage (External)", "Comms And Control Centre"]
-        newline = '\n'
-        output = list([f'{index+1} - {pod}' for index, pod in enumerate(pod_name_arr)])
-        instructions = Label(self.canvas,text=f"Please enter the pod the disaster should take place in{newline}{newline.join(output)}",font=20, bg='grey')
-        instructions.place(relx=0.025, rely=0.05, relwidth=0.8, relheight=0.5, anchor="nw")
+        input_frame.place(relx=0.5, rely=0.5, relwidth=0.95, relheight=0.075, anchor="center")
+
+        instructions = Label(self.canvas,
+                             text="Please enter the pod the disaster should take place in."
+                                  "\nEnter the pod letter (A, B, F, etc)",
+                             font=20, bg='grey')
+        instructions.place(relx=0.025, rely=0.05, relwidth=0.6, relheight=0.2, anchor="nw")
 
         save_cancel_frame = init_save_cancel_frame(self.canvas, disaster)
         save_cancel_frame.place(relx=0.5, rely=0.85, relwidth=0.8, relheight=0.175, anchor="center")
@@ -161,24 +162,33 @@ def init_disaster_button_frame(master):
 
     Grid.rowconfigure(frame, 0, weight=1)
     Grid.rowconfigure(frame, 1, weight=1)
+
     Grid.columnconfigure(frame, 0, weight=1)
     Grid.columnconfigure(frame, 1, weight=1)
+    Grid.columnconfigure(frame, 2, weight=1)
+    Grid.columnconfigure(frame, 3, weight=1)
+
+
 
     fire_btn = Button(frame, text="Fire", bg="orange", font=20,
                       command=lambda: MainWindow.render_add_disaster("fire"), highlightthickness=0)
     fire_btn.grid(row=0, column=0, sticky="news", padx=15, pady=15)
 
-    bio_btn = Button(frame, text="Biohazard", bg="yellow", font=20,
+    bio_btn = Button(frame, text="Biohazard", bg="green", font=20,
                      command=lambda: MainWindow.render_add_disaster("bio"), highlightthickness=0)
-    bio_btn.grid(row=0, column=1, sticky="news", padx=15, pady=15)
+    bio_btn.grid(row=0, column=2, sticky="news", padx=15, pady=15)
 
-    air_btn = Button(frame, text="Air Hazard", bg="blue", font=20,
+    air_btn = Button(frame, text="Air Quality", bg="light blue", font=20,
                      command=lambda: MainWindow.render_add_disaster("airquality"), highlightthickness=0)
     air_btn.grid(row=1, column=0, sticky="news", padx=15, pady=15)
 
-    rad_btn = Button(frame, text="Radiation", bg="green", font=20,
+    air_btn = Button(frame, text="Air Pressure", bg="blue", font=20,
+                     command=lambda: MainWindow.render_add_disaster("airpressure"), highlightthickness=0)
+    air_btn.grid(row=1, column=1, sticky="news", padx=15, pady=15)
+
+    rad_btn = Button(frame, text="Radiation", bg="yellow", font=20,
                      command=lambda: MainWindow.render_add_disaster("radiation"), highlightthickness=0)
-    rad_btn.grid(row=1, column=1, sticky="news", padx=15, pady=15)
+    rad_btn.grid(row=1, column=2, sticky="news", padx=15, pady=15)
 
     return frame
 
@@ -332,11 +342,13 @@ def init_timeline_frame(master):
         if entry[0] == "fire":
             colour = "orange"
         elif entry[0] == "bio":
-            colour = "yellow"
+            colour = "green"
         elif entry[0] == "airquality":
+            colour = "light blue"
+        elif entry[0] == "airpressure":
             colour = "blue"
         elif entry[0] == "radiation":
-            colour = "green"
+            colour = "yellow"
         elif entry[0] == "TIME":
             colour = "#fb7dff"
         else:
@@ -344,6 +356,7 @@ def init_timeline_frame(master):
             colour = "red"
 
         if entry[0] != "TIME":
+            print(entry)
             text = entry[0].upper() + "\nin pod: " + entry[1]
         else:
             text = "Time to wait\n" + entry[1] + " seconds"
@@ -500,6 +513,8 @@ def save(context):
             disaster_array = [disaster_list[2]]
         elif context == disaster_list[3]:
             disaster_array = [disaster_list[3]]
+        elif context == disaster_list[4]:
+            disaster_array = [disaster_list[4]]
         else:
             print("ERROR: Not a valid disaster to save")
 
