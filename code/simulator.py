@@ -142,7 +142,6 @@ class Pod():
         self.rightangle = 90
         self.topangle = 0
         self.bottomangle = 0
-
         # Checking if there is a pod within another one if there is it will add the connecting_rooms so it knows how to get to the pod
         if len(self.internal_pod):
             self.internal_top_door = internal_pod[0]
@@ -193,26 +192,26 @@ class Pod():
             if door_to_close == 'left':
                 # Left door
                 if self.leftangle < 90:
-                    self.leftangle +=1*multiplier
+                    self.leftangle +=1
                 else:
                     self.leftdoorstate = False
             elif door_to_close == 'right':
                 # Right door
                 if self.rightangle < 90:
-                    self.rightangle +=1*multiplier
+                    self.rightangle +=1
                 else:
                     self.rightdoorstate = False
         if self.orientation == 'top' or self.pod_type == 'A':
             if door_to_close  == 'top':
                 # Top door
                 if self.topangle > 0:
-                    self.topangle -=1*multiplier
+                    self.topangle -=1
                 else:
                     self.topdoorstate = False
             elif door_to_close == 'bottom':
                 # Bottom door
                 if self.bottomangle > 0:
-                    self.bottomangle -=1*multiplier
+                    self.bottomangle -=1
                 else:
                     self.bottomdoorstate = False
 
@@ -221,23 +220,23 @@ class Pod():
             if door_to_open == 'left':
                 if not self.leftdoor.lockdown or admin:
                     if self.leftangle > -45:
-                        self.leftangle -=1*multiplier
+                        self.leftangle -=1
                 # Left door
             elif door_to_open == 'right':
                 if not self.rightdoor.lockdown or admin:
                     if self.rightangle > -45:
-                        self.rightangle -=1*multiplier
+                        self.rightangle -=1
                 # Right door
         if self.orientation == 'top' or self.pod_type == 'A':
             if door_to_open  == 'top':
                 if not self.topdoor.lockdown or admin:
                     if self.topangle < 135 :
-                        self.topangle +=1*multiplier
+                        self.topangle +=1
                 # Top door
             elif door_to_open == 'bottom':
                 if not self.bottomdoor.lockdown or admin:
                     if self.bottomangle < 135:
-                        self.bottomangle +=1*multiplier
+                        self.bottomangle +=1
                 # Bottom door
 
     def drawpod(self):
@@ -581,8 +580,6 @@ def points_in_circle_np(radius, x0=0, y0=0, ):
     for x, y in zip(x_[x], y_[y]):
         yield x, y
 
-
-print(scenario_gui.state.speed,scenario_gui.state.num_astros_arr,scenario_gui.state.timeline)
 scale = 1.25
 multiplier = int(scenario_gui.state.speed[:-1])
 # Colours
@@ -682,7 +679,7 @@ count = 0
 wait_time = False
 pygame.time.set_timer(pygame.USEREVENT, 1000)
 font = pygame.font.SysFont('Consolas', 30)
-
+starttime = time.time()
 eventparticles = []
 
 
@@ -756,7 +753,8 @@ while run:
         if len(pod.internal_pod):
             internal_pods[pod.name]=pod.internal_pod[0]
 
-    if counter % (2/multiplier) == 0:
+    if time.time() >= starttime+(0.032/multiplier):
+        starttime = time.time()
         for pod in pods:
             if pod.orientation == 'left' or pod.pod_type == 'A':
                 if pod.pod_type == 'A':
