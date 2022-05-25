@@ -42,11 +42,17 @@ class Emergency:
         for pod in pods:
             if pod.id == self.location:
                 mx, my = pod.pos[0], pod.pos[1]
+                radius = pod.radius
                 break
         eventparticles.append([[mx, my], [random.randint(0, 20) / 10 - 1, -2], random.randint(4, 6)])
         if time.time() >= self.start + 3:
                 # Doors lock
                 lockdown(self.location)
+
+        for astro in astronauts:
+            if inside_pod(mx,my,astro.rect.centerx,astro.rect.centery,radius):
+                if time.time() >= self.start+5:
+                    astro.health = 0
 
         # Event
         for timer in clocks:
@@ -170,7 +176,7 @@ class Pod():
         else:
             self.pod_type = 'unknown'
 
-        # Creating doors from class
+        # Creating doors from `class`
         self.leftdoor = Doors([self.name,self.leftdoor_pod])
         self.rightdoor = Doors([self.name,self.rightdoor_pod])
         self.topdoor = Doors([self.name,self.topdoor_pod])
@@ -753,6 +759,7 @@ while run:
         if len(pod.internal_pod):
             internal_pods[pod.name]=pod.internal_pod[0]
 
+    # Door logic to see if a door needs to be opened or closed
     if time.time() >= starttime+(0.032/multiplier):
         starttime = time.time()
         for pod in pods:
