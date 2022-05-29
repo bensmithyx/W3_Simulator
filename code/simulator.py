@@ -683,12 +683,6 @@ events = []
 
 clocks = [Timer('acms_20delay', 6, 'delay', 50, False), Timer('doors', 5, 'doors', 100, False), Timer('fire', 20, 'fire', 150, False),
           Timer('bio', 20, 'bio', 200, False), Timer('radiation', 20, 'radiation', 250, False), Timer('airquality', 20, 'airquality', 300, False),Timer('airpressure', 20, 'airpressure', 350, False),Timer('Evacuation',259200,'Evacuation',400,False)]
-'''
-healthbars = []
-for astro in astronauts:
-    healthbars.append(HealthBar(astro.PLD))'''
-
-
 
 # Background Image
 surface = pygame.image.load('images/surface.png')
