@@ -327,15 +327,6 @@ class Pod():
                     doorcolour = self.doorcolourdic[self.door_types[index2]]
                 self.bottomangle = self.bottomdoor.draw(pivot, self.bottomangle, doorcolour)
 
-class HealthBar(pygame.sprite.Sprite):
-      def __init__(self, pos):
-            super().__init__()
-            self.healthstates = [pygame.image.load("images/healthbar/green.png"),pygame.image.load("images/healthbar/yellow.png"),pygame.image.load("images/healthbar/orange.png"),pygame.image.load("images/healthbar/red.png"),pygame.image.load("images/healthbar/dead.png")]
-            self.image = pygame.image.load("images/healthbar/green.png")
-            self.pos = pos
-      def render(self):
-            screen.blit(self.image, (pos[0],pos[1]))
-
 class Astronaut(pygame.sprite.Sprite):
     def __init__(self, id, x, y, scale):
         pygame.sprite.Sprite.__init__(self)
@@ -352,6 +343,7 @@ class Astronaut(pygame.sprite.Sprite):
         self.pld = True
         self.admin = False
         self.switch = True
+        self.healthstates = [pygame.image.load("images/healthbar/green.png"),pygame.image.load("images/healthbar/yellow.png"),pygame.image.load("images/healthbar/orange.png"),pygame.image.load("images/healthbar/red.png"),pygame.image.load("images/healthbar/dead.png")]
         # Index 0 is IDLE animations
         animation_types = ['astronautidle', 'astronautrunning','astronautdead','astronautrunningdown','astronautrunningup']
         for animation in animation_types:
@@ -365,8 +357,10 @@ class Astronaut(pygame.sprite.Sprite):
 
         self.animation_list.append(temp_list)
         self.image = self.animation_list[self.action][self.frame_index]
+        self.healthimage = self.healthstates[0]
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
+        self.PLD = (self.rect.centerx,self.rect.centery)
 
     def update(self):
         self.update_animation()
@@ -455,12 +449,22 @@ class Astronaut(pygame.sprite.Sprite):
             # Update rectangle position
             self.rect.x += dx
             self.rect.y += dy
-            self.PLD = (self.rect.x,self.rect.y)
+
 
     def update_animation(self):
         cooldown = 100
         # Update image depending on current frame
         self.image = self.animation_list[self.action][self.frame_index]
+        if self.health <= 0:
+            self.healthimage = self.healthstates[4]
+        elif self.health > 0 and self.health < 25:
+            self.healthimage = self.healthstates[3]
+        elif self.health > 24 and self.health < 50:
+            self.healthimage = self.healthstates[2]
+        elif self.health > 49 and self.health < 75:
+            self.healthimage = self.healthstates[1]
+        elif self.health > 75 and self.health <= 100:
+            self.healthimage = self.healthstates[0]
         # Check if enough time has past since last update
         if pygame.time.get_ticks() - self.update_time > cooldown:
             self.update_time = pygame.time.get_ticks()
@@ -483,6 +487,7 @@ class Astronaut(pygame.sprite.Sprite):
 
     def draw(self):
         screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
+        screen.blit(self.healthimage, self.rect)
 
 def rotate(surface, angle, pivot, offset):
     rotated_image = pygame.transform.rotozoom(surface, -angle, 1)  # Rotate the image.
@@ -673,10 +678,10 @@ events = []
 
 clocks = [Timer('acms_20delay', 6, 'delay', 50, False), Timer('doors', 5, 'doors', 100, False), Timer('fire', 20, 'fire', 150, False),
           Timer('bio', 20, 'bio', 200, False), Timer('radiation', 20, 'radiation', 250, False), Timer('airquality', 20, 'airquality', 300, False),Timer('airpressure', 20, 'airquality', 350, False),Timer('Evacuation',259200,'Evacuation',400,False)]
-
+'''
 healthbars = []
-for astronaut in astronauts:
-    healthbars.append(HealthBar())
+for astro in astronauts:
+    healthbars.append(HealthBar(astro.PLD))'''
 
 
 
@@ -754,19 +759,7 @@ while run:
                 # Updating selected astronauts movement
                 astronauts[active_astronaut].update()
                 astronauts[active_astronaut].draw()
-                for bar, astro in zip(healthbars,astronauts):
-                    bar.pos = astro.rect.center
-                    if astro.health <= 0:
-                        healthbar.image = bar.healthstates[4]
-                    elif astro.health > 0 and astro.health < 25:
-                        bar.image = bar.healthstates[3]
-                    elif astro.health > 24 and astro.health < 50:
-                        bar.image = bar.healthstates[2]
-                    elif astro.health > 49 and astro.health < 75:
-                        bar.image = bar.healthstates[1]
-                    elif astro.health > 75 and astro.health <= 100:
-                        bar.image = bar.healthstates[0]
-                    bar.render()
+
 
     if astronauts[active_astronaut].alive:
         # Update astronauts[active_astronaut] actions
