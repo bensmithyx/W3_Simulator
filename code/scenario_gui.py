@@ -1,5 +1,5 @@
 from tkinter import *
-
+from tkinter import filedialog
 class State:
     def __init__(self):
         self.speed = "1x"
@@ -97,7 +97,7 @@ class MainWindow:
 
         input_text = disaster + ":"
         input_frame = init_input_frame(self.canvas, input_text)
-        
+
         input_frame.place(relx=0.5, rely=0.7, relwidth=0.95, relheight=0.075, anchor="center")
         pod_name_arr = ["Living Quarters", "Connecting Corridor", "Emergency Quarters", "Life Support/Power Plant/Recycling", "Food Production", "Engineering Workshop/Mining Operations/Storage", "Bio-Research", "Storage (External)", "Comms And Control Centre", "Airlock1", "Airlock2", "Airlock3", "Airlock4", "Airlock5", "Airlock6"]
         newline = '\n'
@@ -127,10 +127,11 @@ class MainWindow:
         self.destroy_canvas()
         self.canvas = Canvas(self.root, bg="grey", highlightthickness=0)
         # creates the frame with both the save and cancel buttons on them
-
+        filename = filedialog.askopenfilename(title='Select txt File',filetypes=[('Text files','*.txt')])
         input_frame = init_input_frame(self.canvas, "Enter the filename of the scenario you wish to load")
         input_frame.place(relx=0.5, rely=0.5, relwidth=0.95, relheight=0.075, anchor="center")
-
+        MainWindow.entries[-1].delete(0,"end")
+        MainWindow.entries[-1].insert(0, filename)
         save_cancel_frame = init_save_cancel_frame(self.canvas, "load")
         save_cancel_frame.place(relx=0.5, rely=0.85, relwidth=0.8, relheight=0.175, anchor="center")
 
