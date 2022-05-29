@@ -25,7 +25,7 @@ class Emergency:
         self.location = location
         self.event_colours = {'fire':orange,'bio':yellow,'airquality':blue,'radiation':green,'airpressure':red}
         # times are in the order delay,time to fix event
-        self.event_times = {'fire':[10,5],'bio':[0,5],'airquality':[20,5],'radiation':[20,5],'airpressure':[20,5]}
+        self.event_times = {'fire':[20,5],'bio':[20,5],'airquality':[20,5],'radiation':[20,5],'airpressure':[20,5]}
         self.firstrun = False
     def circle_surf(self, radius, color):  # cloudy view
         surf = pygame.Surface((radius * 2, radius * 2))
