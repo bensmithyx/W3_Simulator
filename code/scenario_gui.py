@@ -533,12 +533,13 @@ def load_state(filename):
     disasters = lines[2].replace('[', '').replace(']', '').replace("'", '').replace(' ', '').replace('\n', '')
     disaster_arr = disasters.split(',')
 
-    i = 0
-    state.timeline = []
-    while i < len(disaster_arr):
-        to_append = [disaster_arr[i], disaster_arr[i+1]]
-        state.timeline.append(to_append)
-        i += 2
+    if disasters:
+        i = 0
+        state.timeline = []
+        while i < len(disaster_arr):
+            to_append = [disaster_arr[i], disaster_arr[i+1]]
+            state.timeline.append(to_append)
+            i += 2
 
     MainWindow.reload_main()
 
