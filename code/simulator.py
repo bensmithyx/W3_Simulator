@@ -27,6 +27,7 @@ class Emergency:
         # times are in the order delay,time to fix event
         self.event_times = {'fire':[20,5],'bio':[20,5],'airquality':[20,5],'radiation':[20,5],'airpressure':[20,5]}
         self.firstrun = False
+
     def circle_surf(self, radius, color):  # cloudy view
         surf = pygame.Surface((radius * 2, radius * 2))
         pygame.draw.circle(surf, color, (radius, radius), radius)
@@ -51,8 +52,8 @@ class Emergency:
 
         for astro in astronauts:
             if inside_pod(mx,my,astro.rect.centerx,astro.rect.centery,radius):
-                if time.time() >= self.start+5:
-                    astro.health = 0
+                if time.time() < self.start+20:
+                    astro.health -=0.3
 
         # Event
         for timer in clocks:
@@ -325,6 +326,15 @@ class Pod():
                 else:
                     doorcolour = self.doorcolourdic[self.door_types[index2]]
                 self.bottomangle = self.bottomdoor.draw(pivot, self.bottomangle, doorcolour)
+
+class HealthBar(pygame.sprite.Sprite):
+      def __init__(self):
+            super().__init__()
+            self.healthstates = [pygame.image.load("images/healthbar/green.png"),pygame.image.load("images/healthbar/yellow.png"),pygame.image.load("images/healthbar/orange.png"),pygame.image.load("images/healthbar/red.png"),pygame.image.load("images/healthbar/dead.png")]
+            self.image = pygame.image.load("images/healthbar/green.png")
+
+      def render(self):
+            screen.blit(self.image, (20,20))
 
 class Astronaut(pygame.sprite.Sprite):
     def __init__(self, id, x, y, scale):
@@ -686,7 +696,7 @@ pygame.time.set_timer(pygame.USEREVENT, 1000)
 font = pygame.font.SysFont('Consolas', 30)
 starttime = time.time()
 eventparticles = []
-
+healthbar = HealthBar()
 evac = False
 while run:
     if count >= len(scenario_gui.state.timeline):
@@ -706,7 +716,6 @@ while run:
     [pod.drawpod() for pod in pods]
     # Drawing doors on the pods
     [pod.drawdoors() for pod in pods]
-
     internal_pod_check = ''
 
     if current != 0:
@@ -741,6 +750,17 @@ while run:
                 # Updating selected astronauts movement
                 astronauts[active_astronaut].update()
                 astronauts[active_astronaut].draw()
+                if astronauts[active_astronaut].health <= 0:
+                    healthbar.image = healthbar.healthstates[4]
+                elif astronauts[active_astronaut].health > 0 and astronauts[active_astronaut].health < 25:
+                    healthbar.image = healthbar.healthstates[3]
+                elif astronauts[active_astronaut].health > 24 and astronauts[active_astronaut].health < 50:
+                    healthbar.image = healthbar.healthstates[2]
+                elif astronauts[active_astronaut].health > 49 and astronauts[active_astronaut].health < 75:
+                    healthbar.image = healthbar.healthstates[1]
+                elif astronauts[active_astronaut].health > 75 and astronauts[active_astronaut].health <= 100:
+                    healthbar.image = healthbar.healthstates[0]
+                healthbar.render()
 
     if astronauts[active_astronaut].alive:
         # Update astronauts[active_astronaut] actions
@@ -824,7 +844,6 @@ while run:
                     if pod.topdoorstate == True and pod.bottomdoorstate == False and pod.leftdoorstate == False and pod.rightdoorstate == False and pods[index(pod.connecting_rooms[index1])].topdoorstate == False and pods[index(pod.connecting_rooms[index1])].rightdoorstate == False and pods[index(pod.connecting_rooms[index1])].leftdoorstate == False:
                         pod.opendoor(astronauts[active_astronaut].admin, 'top')
                     else:
-                        #
                          pod.closedoor('top')
                 elif pod.connecting_rooms[index1] == 'outside':
                     if pod.topdoorstate == True and pod.bottomdoorstate == False and pod.leftdoorstate == False and pod.rightdoorstate == False:
@@ -837,12 +856,8 @@ while run:
                     else:
                         pod.closedoor('bottom')
                 elif pod.connecting_rooms[index2] == 'outside':
-                     if pod.bottomdoorstate == True and pod.topdoorstate == False and pod.leftdoorstate == False and pod.rightdoorstate == False:
-                         pod.opendoor(astronauts[active_astronaut].admin, 'bottom')
-                     else:
+                 if pod.bottomdoorstate == True and pod.topdoorstate == False and pod.leftdoorstate == False:
                          pod.closedoor('bottom')
-
-
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
