@@ -14,7 +14,7 @@ class Timer:
         self.state = state
     # Displays timers to the GUI
     def display(self):
-        screen.blit(font.render(self.text+self.timetext, True, (0, 0, 0)), (1500, self.yxis))
+        screen.blit(font.render(f'{self.text}: {self.timetext}', True, (0, 0, 0)), (1500, self.yxis))
     # Resets timers to original time
     def reset(self):
         self.time = self.starttime
@@ -659,11 +659,10 @@ for index1, pos in enumerate(podpos):
         astronauts.append(Astronaut(count,randompos[0],randompos[1],2/scale))
         count +=1
 
-
 events = []
 
 clocks = [Timer('acms_20delay', 6, 'delay', 50, False), Timer('doors', 5, 'doors', 100, False), Timer('fire', 20, 'fire', 150, False),
-          Timer('bio', 20, 'bio', 200, False), Timer('radiation', 20, 'radiation', 250, False), Timer('airquality', 20, 'airquality', 300, False),Timer('airpressure', 20, 'airquality', 350, False)]
+          Timer('bio', 20, 'bio', 200, False), Timer('radiation', 20, 'radiation', 250, False), Timer('airquality', 20, 'airquality', 300, False),Timer('airpressure', 20, 'airquality', 350, False),Timer('Evacuation',259200,'Evacuation',400,False)]
 
 
 # Background Image
@@ -688,14 +687,13 @@ font = pygame.font.SysFont('Consolas', 30)
 starttime = time.time()
 eventparticles = []
 
-
+evac = False
 while run:
     if count >= len(scenario_gui.state.timeline):
         #print('simulation ended')
         current = 0
     else:
         current = scenario_gui.state.timeline[count]
-
 
     counter +=1
     #for pod in pods:
@@ -720,19 +718,29 @@ while run:
             if time.time() >= start + int(current[1]):
                 wait_time=False
                 count+=1
+        elif current == 'Evacuation':
+            evac = True
+            count+=1
         else:
             events.append(Emergency(current[0],int(current[1])))
             count+=1
 
+    if evac == True:
+        for timer in clocks:
+            if timer.name == 'Evacuation':
+                timer.state = True
+
     for hazard in events:
         hazard.start_event()
 
-    # Draws the astronauts to the screen
-    [astronaut.draw() for astronaut in astronauts]
-
-    # Updating selected astronauts movement
-    astronauts[active_astronaut].update()
-    astronauts[active_astronaut].draw()
+    for timer in clocks:
+        if timer.name == 'Evacuation':
+            if timer.time > 0:
+                # Draws the astronauts to the screen
+                [astronaut.draw() for astronaut in astronauts]
+                # Updating selected astronauts movement
+                astronauts[active_astronaut].update()
+                astronauts[active_astronaut].draw()
 
     if astronauts[active_astronaut].alive:
         # Update astronauts[active_astronaut] actions

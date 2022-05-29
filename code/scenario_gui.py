@@ -314,12 +314,18 @@ def init_disaster_time_frame(master):
     frame['relief'] = "sunken"
 
     text_disaster = "Add a Disaster"
-    disaster_btn = Button(frame, text=text_disaster, height=15, width=30, command=disaster_config, bg="red", highlightthickness=0)
+    disaster_btn = Button(frame, text=text_disaster, height=15, width=15, command=disaster_config, bg="red", highlightthickness=0)
     disaster_btn.pack(side=LEFT, anchor=NW)
 
+
+
     text_time = "Add Wait Time"
-    time_btn = Button(frame, text=text_time, height=15, width=30, command=add_time, bg="orange", highlightthickness=0)
+    time_btn = Button(frame, text=text_time, height=15, width=15, command=add_time, bg="orange", highlightthickness=0)
     time_btn.pack(side=RIGHT, anchor=NE)
+
+    text_evacuate = "Add 3 day Evacuation"
+    evacuate_btn = Button(frame, text=text_evacuate, height=15, width=15, command=add_evacuation, bg="purple", highlightthickness=0)
+    evacuate_btn.pack(side=BOTTOM)
     return frame
 
 
@@ -343,11 +349,14 @@ def init_timeline_frame(master):
             colour = "yellow"
         elif entry[0] == "TIME":
             colour = "#fb7dff"
+        elif entry == "Evacuation":
+            colour = "purple"
         else:
             print("Error: Invalid entry")
             colour = "red"
-
-        if entry[0] != "TIME":
+        if entry == 'Evacuation':
+            text = "3-day Evacuation"
+        elif entry[0] != "TIME":
             print(entry)
             text = entry[0].upper() + "\nin pod: " + entry[1]
         else:
@@ -457,6 +466,9 @@ def add_time():
     MainWindow.destroy_canvas()
     MainWindow.render_add_time()
 
+def add_evacuation():
+    state.timeline.append("Evacuation")
+    MainWindow.reload_main()
 
 def save_scenario():
     text = state.speed + "\n" + str(state.num_astros_arr) + "\n" + str(state.timeline)
