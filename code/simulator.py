@@ -465,6 +465,7 @@ class Astronaut(pygame.sprite.Sprite):
             self.healthimage = self.healthstates[1]
         elif self.health > 75 and self.health <= 100:
             self.healthimage = self.healthstates[0]
+        self.healthimage = pygame.transform.scale(self.healthimage, (int(self.healthimage.get_width()*0.75), int(self.healthimage.get_height()*0.75)))
         # Check if enough time has past since last update
         if pygame.time.get_ticks() - self.update_time > cooldown:
             self.update_time = pygame.time.get_ticks()
@@ -487,7 +488,7 @@ class Astronaut(pygame.sprite.Sprite):
 
     def draw(self):
         screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
-        screen.blit(self.healthimage, self.rect)
+        screen.blit(self.healthimage, (self.rect.left-10,self.rect.top-20,self.rect.bottom,self.rect.right))
 
 def rotate(surface, angle, pivot, offset):
     rotated_image = pygame.transform.rotozoom(surface, -angle, 1)  # Rotate the image.
