@@ -328,13 +328,13 @@ class Pod():
                 self.bottomangle = self.bottomdoor.draw(pivot, self.bottomangle, doorcolour)
 
 class HealthBar(pygame.sprite.Sprite):
-      def __init__(self):
+      def __init__(self, pos):
             super().__init__()
             self.healthstates = [pygame.image.load("images/healthbar/green.png"),pygame.image.load("images/healthbar/yellow.png"),pygame.image.load("images/healthbar/orange.png"),pygame.image.load("images/healthbar/red.png"),pygame.image.load("images/healthbar/dead.png")]
             self.image = pygame.image.load("images/healthbar/green.png")
-
+            self.pos = pos
       def render(self):
-            screen.blit(self.image, (20,20))
+            screen.blit(self.image, (pos[0],pos[1]))
 
 class Astronaut(pygame.sprite.Sprite):
     def __init__(self, id, x, y, scale):
@@ -674,6 +674,11 @@ events = []
 clocks = [Timer('acms_20delay', 6, 'delay', 50, False), Timer('doors', 5, 'doors', 100, False), Timer('fire', 20, 'fire', 150, False),
           Timer('bio', 20, 'bio', 200, False), Timer('radiation', 20, 'radiation', 250, False), Timer('airquality', 20, 'airquality', 300, False),Timer('airpressure', 20, 'airquality', 350, False),Timer('Evacuation',259200,'Evacuation',400,False)]
 
+healthbars = []
+for astronaut in astronauts:
+    healthbars.append(HealthBar())
+
+
 
 # Background Image
 surface = pygame.image.load('images/surface.png')
@@ -696,7 +701,6 @@ pygame.time.set_timer(pygame.USEREVENT, 1000)
 font = pygame.font.SysFont('Consolas', 30)
 starttime = time.time()
 eventparticles = []
-healthbar = HealthBar()
 evac = False
 while run:
     if count >= len(scenario_gui.state.timeline):
@@ -750,17 +754,19 @@ while run:
                 # Updating selected astronauts movement
                 astronauts[active_astronaut].update()
                 astronauts[active_astronaut].draw()
-                if astronauts[active_astronaut].health <= 0:
-                    healthbar.image = healthbar.healthstates[4]
-                elif astronauts[active_astronaut].health > 0 and astronauts[active_astronaut].health < 25:
-                    healthbar.image = healthbar.healthstates[3]
-                elif astronauts[active_astronaut].health > 24 and astronauts[active_astronaut].health < 50:
-                    healthbar.image = healthbar.healthstates[2]
-                elif astronauts[active_astronaut].health > 49 and astronauts[active_astronaut].health < 75:
-                    healthbar.image = healthbar.healthstates[1]
-                elif astronauts[active_astronaut].health > 75 and astronauts[active_astronaut].health <= 100:
-                    healthbar.image = healthbar.healthstates[0]
-                healthbar.render()
+                for bar, astro in zip(healthbars,astronauts):
+                    bar.pos = astro.rect.center
+                    if astro.health <= 0:
+                        healthbar.image = bar.healthstates[4]
+                    elif astro.health > 0 and astro.health < 25:
+                        bar.image = bar.healthstates[3]
+                    elif astro.health > 24 and astro.health < 50:
+                        bar.image = bar.healthstates[2]
+                    elif astro.health > 49 and astro.health < 75:
+                        bar.image = bar.healthstates[1]
+                    elif astro.health > 75 and astro.health <= 100:
+                        bar.image = bar.healthstates[0]
+                    bar.render()
 
     if astronauts[active_astronaut].alive:
         # Update astronauts[active_astronaut] actions
