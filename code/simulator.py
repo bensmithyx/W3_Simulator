@@ -53,7 +53,7 @@ class Emergency:
         for astro in astronauts:
             if inside_pod(mx,my,astro.rect.centerx,astro.rect.centery,radius):
                 if time.time() < self.start+20:
-                    astro.health -=0.3
+                    astro.health -=0.3*multiplier
 
         # Event
         for timer in clocks:
@@ -465,7 +465,6 @@ class Astronaut(pygame.sprite.Sprite):
             self.healthimage = self.healthstates[1]
         elif self.health > 75 and self.health <= 100:
             self.healthimage = self.healthstates[0]
-        self.healthimage = pygame.transform.scale(self.healthimage, (int(self.healthimage.get_width()*0.75), int(self.healthimage.get_height()*0.75)))
         # Check if enough time has past since last update
         if pygame.time.get_ticks() - self.update_time > cooldown:
             self.update_time = pygame.time.get_ticks()
@@ -488,7 +487,12 @@ class Astronaut(pygame.sprite.Sprite):
 
     def draw(self):
         screen.blit(pygame.transform.flip(self.image, self.flip, False), self.rect)
-        screen.blit(self.healthimage, (self.rect.left-10,self.rect.top-20,self.rect.bottom,self.rect.right))
+        self.healthimage = pygame.transform.scale(self.healthimage, (int(self.healthimage.get_width()*0.75), int(self.healthimage.get_height()*0.75)))
+        if not self.alive:
+            screen.blit(self.healthimage, (self.rect.left+20,self.rect.top,self.rect.bottom,self.rect.right))
+        else:
+            screen.blit(self.healthimage, (self.rect.left-4,self.rect.top-20,self.rect.bottom,self.rect.right))
+
 
 def rotate(surface, angle, pivot, offset):
     rotated_image = pygame.transform.rotozoom(surface, -angle, 1)  # Rotate the image.
@@ -678,7 +682,7 @@ for index1, pos in enumerate(podpos):
 events = []
 
 clocks = [Timer('acms_20delay', 6, 'delay', 50, False), Timer('doors', 5, 'doors', 100, False), Timer('fire', 20, 'fire', 150, False),
-          Timer('bio', 20, 'bio', 200, False), Timer('radiation', 20, 'radiation', 250, False), Timer('airquality', 20, 'airquality', 300, False),Timer('airpressure', 20, 'airquality', 350, False),Timer('Evacuation',259200,'Evacuation',400,False)]
+          Timer('bio', 20, 'bio', 200, False), Timer('radiation', 20, 'radiation', 250, False), Timer('airquality', 20, 'airquality', 300, False),Timer('airpressure', 20, 'airpressure', 350, False),Timer('Evacuation',259200,'Evacuation',400,False)]
 '''
 healthbars = []
 for astro in astronauts:
