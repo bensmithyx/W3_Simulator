@@ -142,6 +142,7 @@ class Pod():
         self.leftdoorstate = False
         self.topdoorstate = False
         self.bottomdoorstate = False
+        self.start = time.time()
         # Adds doors colours based on what type of door it is
         self.doorcolourdic = {'empty':(0,0,0),'normal':doorcolour,'airlock':lightblue,'fakeairlock':lightblue}
         self.opendoorcolourdic = {'empty':(0,0,0),'normal':open,'airlock':lightblue,'fakeairlock':lightblue}
@@ -149,6 +150,7 @@ class Pod():
         self.rightangle = 90
         self.topangle = 0
         self.bottomangle = 0
+        self.firstrun = True
         # Checking if there is a pod within another one if there is it will add the connecting_rooms so it knows how to get to the pod
         if len(self.internal_pod):
             self.internal_top_door = internal_pod[0]
@@ -719,6 +721,8 @@ font = pygame.font.SysFont('Consolas', 30)
 starttime = time.time()
 eventparticles = []
 evac = False
+lockdowns = []
+opendoors = []
 while run:
     if count >= len(scenario_gui.state.timeline):
         #print('simulation ended')
@@ -737,6 +741,20 @@ while run:
     [pod.drawpod() for pod in pods]
     # Drawing doors on the pods
     [pod.drawdoors() for pod in pods]
+
+    for pod in lockdowns:
+        if time.time() >= pod[1]:
+            unlockdown(pod[0])
+            opendoors.append([pod[0],pod[2]])
+            lockdowns.remove(pod)
+        else:
+            lockdown(pod[0])
+
+    for all in pods:
+        for door in opendoors:
+            if all.id == door[0]:
+                all.opendoor(astronauts[active_astronaut].admin, door[1])
+
     internal_pod_check = ''
 
     if current != 0:
@@ -807,6 +825,14 @@ while run:
                 else:
                     index1, index2 = 0, 1
 
+                def run(doorside):
+                    if pod.firstrun == True:
+                        pod.start = time.time()
+                        pod.firstrun = False
+                        lockdown(pod.id)
+                        return [True,doorside]
+                    return [False,""]
+
                 if  keys[pygame.K_e] and astronauts[active_astronaut].pld == True:
                     if pod.connecting_rooms[index1] != 'empty' and pod.side_to_attach_door != 'right':
                         if checkcollided(pod.leftdoorpos[0],pod.leftdoorpos[1],x,y):
@@ -822,7 +848,8 @@ while run:
                         pod.closedoor('left')
                 elif pod.connecting_rooms[index1] == 'outside':
                     if pod.leftdoorstate == True and pod.rightdoorstate == False and pod.topdoorstate == False and pod.bottomdoorstate == False:
-                        pod.opendoor(astronauts[active_astronaut].admin, 'left')
+                        lockdowns.append([pod.id,time.time()+10,'left'])
+                        #pod.opendoor(astronauts[active_astronaut].admin, 'left')
                     else:
                         pod.closedoor('left')
                 if pod.connecting_rooms[index2] not in ['outside','empty']:
@@ -866,7 +893,9 @@ while run:
                     else:
                         pod.closedoor('bottom')
                 elif pod.connecting_rooms[index2] == 'outside':
-                 if pod.bottomdoorstate == True and pod.topdoorstate == False and pod.leftdoorstate == False:
+                    if pod.bottomdoorstate == True and pod.topdoorstate == False and pod.leftdoorstate == False and pod.rightdoorstate == False:
+                        pod.opendoor(astronauts[active_astronaut].admin, 'bottom')
+                    else:
                          pod.closedoor('bottom')
 
     for event in pygame.event.get():
