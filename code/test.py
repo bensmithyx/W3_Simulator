@@ -23,11 +23,10 @@ class Emergency:
     def __init__(self, type, location):
         self.type = type
         self.location = location
-        self.event_colours = {'fire':orange,'bio':yellow,'airquality':blue,'radiation':green,'airpressure':red,'airlockrefill':'lightgrey'}
+        self.event_colours = {'fire':orange,'bio':yellow,'airquality':blue,'radiation':green,'airpressure':red}
         # times are in the order delay,time to fix event
-        self.event_times = {'fire':[20,5],'bio':[20,5],'airquality':[20,5],'radiation':[20,5],'airpressure':[20,5],'airlockrefill':[10,0]}
+        self.event_times = {'fire':[20,5],'bio':[20,5],'airquality':[20,5],'radiation':[20,5],'airpressure':[20,5]}
         self.firstrun = False
-        self.message = True
 
     def circle_surf(self, radius, color):  # cloudy view
         surf = pygame.Surface((radius * 2, radius * 2))
@@ -47,13 +46,13 @@ class Emergency:
                 radius = pod.radius
                 break
         eventparticles.append([[mx, my], [random.randint(0, 20) / 10 - 1, -2], random.randint(4, 6)])
-        if time.time() >= self.start + self.event_times[self.type][0]:
+        if time.time() >= self.start + 3:
                 # Doors lock
                 lockdown(self.location)
 
         for astro in astronauts:
             if inside_pod(mx,my,astro.rect.centerx,astro.rect.centery,radius):
-                if time.time() < self.start+20/multiplier:
+                if time.time() < self.start+20:
                     astro.health -=0.3*multiplier
 
         # Event
@@ -61,9 +60,11 @@ class Emergency:
             # Surpress
             if timer.name == self.type:
                 if timer.time > 0:
-                    if timer.time < timer.starttime-self.event_times[self.type][1]:
+                    if timer.time < self.event_times[self.type][1]:
                         pixel_colour = (255, 255, 255)
                         eventparticles.append([[mx, my], [random.randint(0, 20) / 10 - 1, -2], random.randint(4, 6)])
+
+
                     else:
                         pixel_colour = self.event_colours[self.type]
                     for eventparticle in eventparticles:
@@ -86,9 +87,8 @@ class Emergency:
                                 # Alarm (some dont have alarms)
                                 #alarm_sound.play()
                 elif timer.time < 0:
-                    if timer.time < -2 and self.message:
+                    if timer.time < -2 and timer.time > -4:
                         screen.blit(font.render('All clear', True, (0, 0, 0)), (mx, my))
-                        self.message = False
                     for pod in pods:
                         if pod.id == self.location:
                             pod.colour = lightgrey
@@ -149,6 +149,10 @@ class Pod():
         self.rightangle = 90
         self.topangle = 0
         self.bottomangle = 0
+        self.isclosing = False
+        self.lastcall = ["","",True]
+        self.lastcallclose = ["",True]
+        self.airlockcheck = True
         # Checking if there is a pod within another one if there is it will add the connecting_rooms so it knows how to get to the pod
         if len(self.internal_pod):
             self.internal_top_door = internal_pod[0]
@@ -200,57 +204,95 @@ class Pod():
             return f"{self.name}"
 
     def closedoor(self, door_to_close):
-        if self.orientation == 'left' or self.pod_type == 'A':
-            if door_to_close == 'left':
-                # Left door
-                if self.leftangle < 90:
-                    self.leftangle +=1
-                else:
-                    self.leftdoorstate = False
-            elif door_to_close == 'right':
-                # Right door
-                if self.rightangle < 90:
-                    self.rightangle +=1
-                else:
-                    self.rightdoorstate = False
-        if self.orientation == 'top' or self.pod_type == 'A':
-            if door_to_close  == 'top':
-                # Top door
-                if self.topangle > 0:
-                    self.topangle -=1
-                else:
-                    self.topdoorstate = False
-            elif door_to_close == 'bottom':
-                # Bottom door
-                if self.bottomangle > 0:
-                    self.bottomangle -=1
-                else:
-                    self.bottomdoorstate = False
+        airlockcheck = False
+        if self.isclosing:
+            if self.leftangle == 90:
+
+                num = self.d[door_to_close]
+
+                if self.door_types[num] == 'airlock':
+                    airlockcheck = True
+
+                '''
+                if airlockcheck and self.airlockcheck:
+                    #self.lastcallclose = [door_to_close,False]
+                    for timer in clocks:
+                        if timer.name == 'Airlockcooldown':
+                            timer.state = True
+                        self.airlockcheck = False'''
+
+        for timer in clocks:
+            if timer.name == "Airlockcooldown" and timer.state != True:
+                if self.orientation == 'left' or self.pod_type == 'A':
+                    if door_to_close == 'left':
+                        # Left door
+                        if self.leftangle < 90:
+                            self.leftangle +=1
+                        else:
+                            self.airlockcheck = True
+                            self.leftdoorstate = False
+                    elif door_to_close == 'right':
+                        # Right door
+                        if self.rightangle < 90:
+                            self.rightangle +=1
+                        else:
+                            self.rightdoorstate = False
+                if self.orientation == 'top' or self.pod_type == 'A':
+                    if door_to_close  == 'top':
+                        # Top door
+                        if self.topangle > 0:
+                            self.topangle -=1
+                        else:
+                            self.topdoorstate = False
+                    elif door_to_close == 'bottom':
+                        # Bottom door
+                        if self.bottomangle > 0:
+                            self.bottomangle -=1
+                        else:
+                            self.bottomdoorstate = False
+
 
     def opendoor(self, admin, door_to_open):
-        # Left door
-        if self.orientation == 'left' or self.pod_type == 'A':
-            if door_to_open == 'left':
-                if not self.leftdoor.lockdown or admin:
-                    if self.leftangle > -45:
-                        self.leftangle -=1
-            # Right door
-            elif door_to_open == 'right':
-                if not self.rightdoor.lockdown or admin:
-                    if self.rightangle > -45:
-                        self.rightangle -=1
-        # Top door
-        if self.orientation == 'top' or self.pod_type == 'A':
-            if door_to_open  == 'top':
-                if not self.topdoor.lockdown or admin:
-                    if self.topangle < 135 :
-                        self.topangle +=1
-            # Bottom door
-            elif door_to_open == 'bottom':
-                if not self.bottomdoor.lockdown or admin:
-                    if self.bottomangle < 135:
-                        self.bottomangle +=1
+        airlockcheck = False
 
+        num = self.d[door_to_open]
+
+        if self.door_types[num] == 'airlock':
+            airlockcheck = True
+
+        if airlockcheck and self.airlockcheck:
+            self.lastcall = [admin,door_to_open,False]
+            for timer in clocks:
+                if timer.name == 'Airlockcooldown':
+                    timer.state = True
+
+        for timer in clocks:
+            if timer.name == "Airlockcooldown" and timer.state != True:
+                # Left door
+                if self.orientation == 'left' or self.pod_type == 'A':
+                    if door_to_open == 'left':
+                        if not self.leftdoor.lockdown or admin:
+                            if self.leftangle > -45:
+                                self.leftangle -=1
+                                self.isclosing = True
+                    # Right door
+                    elif door_to_open == 'right':
+                        if not self.rightdoor.lockdown or admin:
+                            if self.rightangle > -45:
+                                self.rightangle -=1
+
+                # Top door
+                if self.orientation == 'top' or self.pod_type == 'A':
+                    if door_to_open  == 'top':
+                        if not self.topdoor.lockdown or admin:
+                            if self.topangle < 135 :
+                                self.topangle +=1
+
+                    # Bottom door
+                    elif door_to_open == 'bottom':
+                        if not self.bottomdoor.lockdown or admin:
+                            if self.bottomangle < 135:
+                                self.bottomangle +=1
 
     def drawpod(self):
         if isinstance(self.position,tuple):
@@ -332,6 +374,19 @@ class Pod():
                 else:
                     doorcolour = self.doorcolourdic[self.door_types[index2]]
                 self.bottomangle = self.bottomdoor.draw(pivot, self.bottomangle, doorcolour)
+
+        if self.lastcall[2] == False:
+            self.lastcall[2] = True
+            self.airlockcheck = False
+            self.opendoor(self.lastcall[0],self.lastcall[1])
+
+
+        if self.lastcallclose[1] == False:
+            self.lastcallclose[1] = True
+            self.airlockcheck = False
+            self.closedoor(self.lastcallclose[0])
+
+
 
 class Astronaut(pygame.sprite.Sprite):
     def __init__(self, id, x, y, scale):
@@ -566,26 +621,22 @@ def lockdown(id):
                 if name in pod.leftdoor.pod_names:
                     pod.leftdoor.lockdown = True
                     if pod.leftdoorstate == True:
-                        pass
-                        #podid = pods[index(pod.leftdoor_pod)].id
+                        podid = pods[index(pod.leftdoor_pod)].id
                         #Emergency('fire',podid).start_event()
                 if name in pod.rightdoor.pod_names:
                     pod.rightdoor.lockdown = True
                     if pod.rightdoorstate == True:
-                        pass
-                        #podid = pods[index(pod.rightdoor_pod)].id
+                        podid = pods[index(pod.rightdoor_pod)].id
                         #Emergency('fire',podid).start_event()
                 if name in pod.topdoor.pod_names:
                     pod.topdoor.lockdown = True
                     if pod.topdoorstate == True:
-                        pass
-                        #podid = pods[index(pod.topdoor_pod)].id
+                        podid = pods[index(pod.topdoor_pod)].id
                         #Emergency('fire',podid).start_event()
                 if name in pod.bottomdoor.pod_names:
                     pod.bottomdoor.lockdown = True
                     if pod.leftdoorstate == True:
-                        pass
-                         #podid = pods[index(pod.bottomdoor_pod)].id
+                        podid = pods[index(pod.bottomdoor_pod)].id
                         #Emergency('fire',podid).start_event()
 
 def unlockdown(id):
@@ -693,9 +744,9 @@ astronauts[0].admin = True
 
 events = []
 
-clocks = [Timer('acms_20delay', 6, 'delay', 50, False), Timer('doors', 5, 'doors', 100, False), Timer('fire', 30, 'fire', 150, False),
-          Timer('bio', 30, 'bio', 200, False), Timer('radiation', 30, 'radiation', 250, False), Timer('airquality', 30, 'airquality', 300, False),
-          Timer('airpressure', 30, 'airpressure', 350, False),Timer('airlockrefill',10,'Airlock (Empty/Refill)',400,False),Timer('Evacuation',259200,'Evacuation',450,False)]
+clocks = [Timer('acms_20delay', 6, 'delay', 50, False), Timer('doors', 5, 'doors', 100, False), Timer('fire', 20, 'fire', 150, False),
+          Timer('bio', 20, 'bio', 200, False), Timer('radiation', 20, 'radiation', 250, False), Timer('airquality', 20, 'airquality', 300, False),
+          Timer('airpressure', 20, 'airpressure', 350, False),Timer('Evacuation',259200,'Evacuation',400,False),Timer('Airlockcooldown',2,'Airlock cool down',450,False)]
 
 # Background Image
 surface = pygame.image.load('images/surface.png')
@@ -745,7 +796,7 @@ while run:
                 start = time.time()
                 wait_time = True
 
-            if time.time() >= start + int(current[1])/multiplier:
+            if time.time() >= start + int(current[1]):
                 wait_time=False
                 count+=1
         elif current == 'Evacuation':
@@ -877,6 +928,9 @@ while run:
                 if timer.state:
                     timer.time -= 1*multiplier
                     timer.timetext = str(timer.time).rjust(3) if timer.time > 0 else '0'.rjust(3)
+                    if timer.time < 1:
+                        timer.state = False
+                        timer.reset()
         # Keyboard keypresses
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_a:
