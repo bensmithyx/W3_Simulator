@@ -84,11 +84,11 @@ class Emergency:
                                 else:
                                     pod.colour = lightgrey
                                 if self.type == 'airpressure':
-                                    pass
+
                                     # Alarm (some dont have alarms)
                                     #pygame.mixer.init()
-                                    #alarm_sound = pygame.mixer.Sound('sounds/alarm.wav')
-                                    #alarm_sound.play()
+                                    alarm_sound = pygame.mixer.Sound('sounds/alarm.wav')
+                                    alarm_sound.play()
                 elif timer.time < 0:
                     if timer.time < -2 and self.message and self.type !='fire':
                         screen.blit(font.render('All clear', True, (0, 0, 0)), (mx, my))

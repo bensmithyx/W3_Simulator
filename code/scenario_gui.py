@@ -19,7 +19,7 @@ class MainWindow:
         self.root.title("Test Scenario Generator")
 
         # Starting size and minimum size of the window
-        self.root.geometry("1000x600")
+        self.root.geometry("1600x1200")
         self.root.minsize(750, 450)
         self.root.configure(bg='grey')
         self.entries = []
