@@ -2,7 +2,7 @@ from typing import Tuple
 import pygame, os, sys, random, time, scenario_gui
 from pygame.locals import *
 import numpy as np
-
+from pygame import mixer
 class Timer:
     def __init__(self, name, time, text, yxis, state):
         self.starttime = time
@@ -83,10 +83,14 @@ class Emergency:
                                     pod.colour = self.event_colours[self.type]
                                 else:
                                     pod.colour = lightgrey
-                                # Alarm (some dont have alarms)
-                                #alarm_sound.play()
+                                if self.type == 'airpressure':
+                                    pass
+                                    # Alarm (some dont have alarms)
+                                    #pygame.mixer.init()
+                                    #alarm_sound = pygame.mixer.Sound('sounds/alarm.wav')
+                                    #alarm_sound.play()
                 elif timer.time < 0:
-                    if timer.time < -2 and self.message:
+                    if timer.time < -2 and self.message and self.type !='fire':
                         screen.blit(font.render('All clear', True, (0, 0, 0)), (mx, my))
                         self.message = False
                     for pod in pods:
