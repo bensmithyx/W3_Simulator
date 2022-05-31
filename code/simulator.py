@@ -659,7 +659,8 @@ pods = [
 pygame.init()
 # Creating the screen
 info = pygame.display.Info()
-screen = pygame.display.set_mode((info.current_w, info.current_h))
+#(info.current_w, info.current_h)
+screen = pygame.display.set_mode((1920,1080))
 
 # Changing the title
 pygame.display.set_caption('Space Station Simulator')
