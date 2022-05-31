@@ -84,6 +84,7 @@ class Emergency:
                                 else:
                                     pod.colour = lightgrey
                                 if self.type == 'airpressure':
+                                    pass
                                     # Alarm (some dont have alarms)
                                     #pygame.mixer.init()
                                     #alarm_sound = pygame.mixer.Sound('sounds/alarm.wav')
